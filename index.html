@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestão Financeira Pessoal</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root {
+    --green:       #00C48C;
+    --green-dark:  #008F66;
+    --green-light: #E0FAF3;
+    --red:         #FF5252;
+    --red-dark:    #C62828;
+    --red-light:   #FFE8E8;
+    --blue:        #4A9EFF;
+    --blue-light:  #E8F3FF;
+    --purple:      #8B7CF6;
+    --purple-light:#F0EEFF;
+    --bg:          #0D0F14;
+    --bg2:         #161920;
+    --bg3:         #1E2129;
+    --border:      rgba(255,255,255,0.07);
+    --text:        #F0F2F5;
+    --text2:       #8A8F9E;
+    --text3:       #555A6A;
+    --radius:      14px;
+    --radius-sm:   8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Sora', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── LOGIN ──────────────────────────────── */
+  #view-login {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+    position: relative;
+    overflow: hidden;
+  }
+  #view-login::before {
+    content: '';
+    position: absolute;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(0,196,140,0.12) 0%, transparent 70%);
+    top: -200px; left: -200px;
+    pointer-events: none;
+  }
+  #view-login::after {
+    content: '';
+    position: absolute;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(74,158,255,0.08) 0%, transparent 70%);
+    bottom: -100px; right: -100px;
+    pointer-events: none;
+  }
+  .login-box {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 2.5rem 2rem;
+    width: 100%;
+    max-width: 360px;
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 32px 64px rgba(0,0,0,0.4);
+  }
+  .login-logo {
+    text-align: center;
+    margin-bottom: 1.75rem;
+  }
+  .login-logo-icon {
+    width: 56px; height: 56px;
+    background: linear-gradient(135deg, var(--green), var(--blue));
+    border-radius: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    margin-bottom: 12px;
+    box-shadow: 0 8px 24px rgba(0,196,140,0.3);
+  }
+  .login-logo h1 { font-size: 17px; font-weight: 600; color: var(--text); }
+  .login-logo p  { font-size: 13px; color: var(--text2); margin-top: 4px; }
+  .login-error {
+    background: rgba(255,82,82,0.12);
+    border: 1px solid rgba(255,82,82,0.3);
+    color: #FF8A80;
+    font-size: 13px;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 14px;
+    text-align: center;
+    display: none;
+  }
+  .field { margin-bottom: 14px; }
+  .field label { font-size: 12px; color: var(--text2); display: block; margin-bottom: 6px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; }
+  .field input {
+    width: 100%; padding: 11px 14px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: 'Sora', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .field input:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(0,196,140,0.12); }
+  .btn-login {
+    width: 100%; padding: 12px;
+    background: linear-gradient(135deg, var(--green), #00A876);
+    border: none; border-radius: var(--radius-sm);
+    color: #fff; font-family: 'Sora', sans-serif;
+    font-size: 14px; font-weight: 600;
+    cursor: pointer; margin-top: 6px;
+    transition: opacity 0.2s, transform 0.1s;
+    box-shadow: 0 4px 16px rgba(0,196,140,0.3);
+  }
+  .btn-login:hover { opacity: 0.9; transform: translateY(-1px); }
+  .btn-login:active { transform: translateY(0); }
+
+  .btn-forgot {
+    width: 100%; padding: 10px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text2); font-family: 'Sora', sans-serif;
+    font-size: 13px; cursor: pointer; margin-top: 8px;
+    transition: all 0.2s;
+  }
+  .btn-forgot:hover { border-color: var(--text3); color: var(--text); }
+
+  .login-msg {
+    font-size: 13px; padding: 10px 14px;
+    border-radius: var(--radius-sm); margin-bottom: 14px;
+    text-align: center; display: none;
+  }
+  .login-msg.success { background: rgba(0,196,140,0.12); border: 1px solid rgba(0,196,140,0.3); color: #6EFFD6; }
+  .login-msg.error   { background: rgba(255,82,82,0.12);  border: 1px solid rgba(255,82,82,0.3);  color: #FF8A80; }
+
+  .reset-step { display: none; }
+  .reset-step.active { display: block; }
+  .reset-back {
+    background: none; border: none; color: var(--text2);
+    font-size: 12px; cursor: pointer; font-family: 'Sora', sans-serif;
+    margin-bottom: 1.25rem; padding: 0;
+    display: flex; align-items: center; gap: 4px; transition: color 0.15s;
+  }
+  .reset-back:hover { color: var(--text); }
+  .reset-title { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+  .reset-sub   { font-size: 13px; color: var(--text2); margin-bottom: 1.25rem; line-height: 1.5; }
+
+  /* ── APP LAYOUT ─────────────────────────── */
+  #view-app { display: none; min-height: 100vh; }
+
+  .sidebar {
+    position: fixed; left: 0; top: 0; bottom: 0;
+    width: 220px;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    padding: 1.5rem 1rem;
+    z-index: 100;
+  }
+  .sidebar-logo {
+    display: flex; align-items: center; gap: 10px;
+    padding: 0 6px; margin-bottom: 2rem;
+  }
+  .sidebar-logo-icon {
+    width: 34px; height: 34px;
+    background: linear-gradient(135deg, var(--green), var(--blue));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+  .sidebar-logo-text { font-size: 14px; font-weight: 600; line-height: 1.2; }
+  .sidebar-logo-text span { display: block; font-size: 11px; color: var(--text2); font-weight: 400; }
+
+  .nav-section { font-size: 10px; color: var(--text3); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; padding: 0 8px; margin-bottom: 6px; }
+
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 10px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 13px; font-weight: 500;
+    color: var(--text2);
+    transition: all 0.15s;
+    margin-bottom: 2px;
+    border: none; background: none; width: 100%; text-align: left;
+  }
+  .nav-item:hover { background: var(--bg3); color: var(--text); }
+  .nav-item.active { background: var(--bg3); color: var(--text); }
+  .nav-item.active.green  .nav-dot { background: var(--green); }
+  .nav-item.active.red    .nav-dot { background: var(--red); }
+  .nav-item.active.blue   .nav-dot { background: var(--blue); }
+  .nav-item.active.purple .nav-dot { background: var(--purple); }
+  .nav-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text3); flex-shrink: 0; transition: background 0.2s; }
+
+  .sidebar-footer { margin-top: auto; }
+  .user-card {
+    background: var(--bg3);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--green), var(--blue));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 600; flex-shrink: 0;
+  }
+  .user-name { font-size: 13px; font-weight: 500; flex: 1; }
+  .logout-btn {
+    background: none; border: none; color: var(--text3);
+    cursor: pointer; font-size: 16px; padding: 2px;
+    transition: color 0.2s;
+  }
+  .logout-btn:hover { color: var(--red); }
+
+  .main {
+    margin-left: 220px;
+    padding: 2rem;
+    min-height: 100vh;
+  }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .page-header { margin-bottom: 1.75rem; }
+  .page-title { font-size: 22px; font-weight: 700; }
+  .page-sub { font-size: 13px; color: var(--text2); margin-top: 4px; }
+
+  /* ── CARDS ──────────────────────────────── */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .card-title {
+    font-size: 11px; font-weight: 600;
+    color: var(--text3); text-transform: uppercase;
+    letter-spacing: 0.08em; margin-bottom: 1rem;
+  }
+
+  /* ── FORM ───────────────────────────────── */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .form-full { grid-template-columns: 1fr; }
+  .f-label { font-size: 11px; color: var(--text2); display: block; margin-bottom: 5px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; }
+  .f-input {
+    width: 100%; padding: 10px 12px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: 'Sora', sans-serif; font-size: 14px;
+    outline: none; transition: border-color 0.2s;
+  }
+  .f-input:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(0,196,140,0.1); }
+  .f-input.red:focus { border-color: var(--red); box-shadow: 0 0 0 3px rgba(255,82,82,0.1); }
+
+  .tag-wrap { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+  .tag {
+    font-size: 12px; padding: 4px 12px;
+    border-radius: 20px;
+    background: var(--bg3); color: var(--text2);
+    border: 1px solid var(--border);
+    cursor: pointer; transition: all 0.15s;
+  }
+  .tag:hover { border-color: var(--text3); color: var(--text); }
+  .tag.sel-green { background: rgba(0,196,140,0.15); color: var(--green); border-color: rgba(0,196,140,0.4); }
+  .tag.sel-red   { background: rgba(255,82,82,0.15);  color: var(--red);   border-color: rgba(255,82,82,0.4); }
+  .add-cat-row { display: flex; gap: 8px; margin-top: 6px; }
+  .add-cat-row .f-input { flex: 1; font-size: 13px; }
+  .btn-add-cat {
+    padding: 8px 14px; font-size: 12px;
+    background: var(--bg3); border: 1px dashed var(--text3);
+    border-radius: var(--radius-sm); color: var(--text2);
+    cursor: pointer; white-space: nowrap; transition: all 0.15s;
+    font-family: 'Sora', sans-serif;
+  }
+  .btn-add-cat:hover { border-color: var(--text2); color: var(--text); }
+
+  .btn-submit {
+    padding: 11px 24px; font-size: 14px; font-weight: 600;
+    border: none; border-radius: var(--radius-sm);
+    cursor: pointer; transition: all 0.15s;
+    font-family: 'Sora', sans-serif;
+  }
+  .btn-submit.green { background: var(--green); color: #000; box-shadow: 0 4px 16px rgba(0,196,140,0.25); }
+  .btn-submit.green:hover { background: #00E0A0; }
+  .btn-submit.red   { background: var(--red);   color: #fff; box-shadow: 0 4px 16px rgba(255,82,82,0.25); }
+  .btn-submit.red:hover   { background: #FF7070; }
+
+  /* ── LISTA ──────────────────────────────── */
+  .list-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .list-item:last-child { border-bottom: none; }
+  .list-icon {
+    width: 36px; height: 36px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+  }
+  .list-icon.green { background: rgba(0,196,140,0.12); }
+  .list-icon.red   { background: rgba(255,82,82,0.12); }
+  .list-info { flex: 1; min-width: 0; }
+  .list-title { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .list-sub { font-size: 12px; color: var(--text2); margin-top: 2px; display: flex; align-items: center; gap: 8px; }
+  .list-badge {
+    font-size: 11px; padding: 2px 8px; border-radius: 20px;
+  }
+  .list-badge.green { background: rgba(0,196,140,0.12); color: var(--green); }
+  .list-badge.red   { background: rgba(255,82,82,0.12);  color: var(--red); }
+  .list-amount { font-size: 15px; font-weight: 600; font-family: 'JetBrains Mono', monospace; flex-shrink: 0; }
+  .list-amount.green { color: var(--green); }
+  .list-amount.red   { color: var(--red); }
+  .del-btn {
+    background: none; border: none; color: var(--text3);
+    cursor: pointer; font-size: 18px; padding: 4px 6px;
+    border-radius: 6px; transition: all 0.15s; flex-shrink: 0;
+  }
+  .del-btn:hover { background: rgba(255,82,82,0.1); color: var(--red); }
+  .empty { text-align: center; padding: 2.5rem; color: var(--text3); font-size: 14px; }
+
+  /* ── MÉTRICAS ───────────────────────────── */
+  .metric-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 1.25rem; }
+  .metric-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+  }
+  .metric-label { font-size: 11px; color: var(--text2); font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+  .metric-val { font-size: 22px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+  .metric-val.green  { color: var(--green); }
+  .metric-val.red    { color: var(--red); }
+  .metric-val.blue   { color: var(--blue); }
+  .metric-val.normal { color: var(--text); }
+
+  /* ── CHARTS ─────────────────────────────── */
+  .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .chart-wrap { position: relative; height: 200px; width: 100%; }
+  .legend { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; }
+  .leg-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text2); }
+  .leg-dot { width: 8px; height: 8px; border-radius: 3px; flex-shrink: 0; }
+
+  /* ── DISTRIBUIÇÃO ───────────────────────── */
+  .dist-info {
+    padding: 12px 16px; border-radius: var(--radius-sm);
+    font-size: 13px; margin-bottom: 1.25rem;
+  }
+  .dist-info.purple { background: rgba(139,124,246,0.1); border: 1px solid rgba(139,124,246,0.2); color: #B8B0FF; }
+  .dist-info.red    { background: rgba(255,82,82,0.1);   border: 1px solid rgba(255,82,82,0.2);   color: #FF8A80; }
+
+  .dist-blocks { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 1.25rem; }
+  .dist-block {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 1.25rem;
+  }
+  .dist-block-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .dist-block-pct { font-size: 12px; color: var(--text2); margin-bottom: 10px; }
+  .dist-block-val { font-size: 20px; font-weight: 700; font-family: 'JetBrains Mono', monospace; margin-bottom: 10px; }
+  .dist-block-val.green  { color: var(--green); }
+  .dist-block-val.blue   { color: var(--blue); }
+  .dist-block-val.red    { color: var(--red); }
+  .dist-block-label.green { color: var(--green); }
+  .dist-block-label.blue  { color: var(--blue); }
+  .dist-block-label.red   { color: var(--red); }
+  .prog-bar { height: 6px; border-radius: 3px; background: var(--bg3); overflow: hidden; }
+  .prog-fill { height: 100%; border-radius: 3px; transition: width 0.6s cubic-bezier(.4,0,.2,1); }
+
+  /* ── HISTÓRICO ──────────────────────────── */
+  .nav-item.active.orange .nav-dot { background: #FFB830; }
+
+  .hist-controls {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 1.5rem; flex-wrap: wrap;
+  }
+  .hist-toggle {
+    display: flex;
+    background: var(--bg3);
+    border-radius: var(--radius-sm);
+    padding: 3px; gap: 3px;
+  }
+  .hist-toggle button {
+    padding: 7px 18px; font-size: 13px; font-weight: 500;
+    border: none; border-radius: 6px;
+    cursor: pointer; font-family: 'Sora', sans-serif;
+    color: var(--text2); background: transparent;
+    transition: all 0.15s;
+  }
+  .hist-toggle button.active { background: var(--bg2); color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,0.3); }
+  .hist-sel {
+    padding: 8px 12px; font-size: 13px;
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); color: var(--text);
+    font-family: 'Sora', sans-serif; outline: none; cursor: pointer;
+  }
+  .hist-nav {
+    display: flex; align-items: center; gap: 6px; margin-left: auto;
+  }
+  .hist-nav button {
+    width: 32px; height: 32px;
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); color: var(--text2);
+    cursor: pointer; font-size: 16px; display: flex;
+    align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .hist-nav button:hover { background: var(--bg2); color: var(--text); }
+  .hist-nav span {
+    font-size: 14px; font-weight: 600; min-width: 130px;
+    text-align: center; color: var(--text);
+  }
+
+  .hist-summary {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 12px; margin-bottom: 1.25rem;
+  }
+  .hist-bar-chart { height: 260px; }
+
+  .month-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 13px 0; border-bottom: 1px solid var(--border);
+    cursor: pointer; transition: background 0.1s;
+  }
+  .month-row:last-child { border-bottom: none; }
+  .month-row:hover { background: rgba(255,255,255,0.02); border-radius: 6px; padding-left: 6px; padding-right: 6px; }
+  .month-row-name { font-size: 14px; font-weight: 500; }
+  .month-row-nums { display: flex; gap: 24px; align-items: center; }
+  .month-row-num { font-size: 13px; font-family: 'JetBrains Mono', monospace; }
+  .month-badge {
+    font-size: 11px; padding: 3px 10px; border-radius: 20px;
+    font-family: 'JetBrains Mono', monospace; font-weight: 600;
+  }
+  .month-badge.pos { background: rgba(0,196,140,0.12); color: var(--green); }
+  .month-badge.neg { background: rgba(255,82,82,0.12);  color: var(--red); }
+
+  .detail-header {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 1.25rem;
+  }
+  .back-btn {
+    padding: 7px 14px; font-size: 13px;
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); color: var(--text2);
+    cursor: pointer; font-family: 'Sora', sans-serif;
+    transition: all 0.15s;
+  }
+  .back-btn:hover { color: var(--text); }
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN ─────────────────────────────────────────── -->
+<div id="view-login">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="login-logo-icon">💰</div>
+      <h1>Gestão Financeira</h1>
+      <p>Controle pessoal de finanças</p>
+    </div>
+    <div class="login-error" id="login-error">Usuário ou senha incorretos.</div>
+
+    <!-- PAINEL LOGIN -->
+    <div class="reset-step active" id="step-login">
+      <div class="field">
+        <label>Usuário</label>
+        <input type="text" id="inp-user" placeholder="Digite seu usuário" autocomplete="username">
+      </div>
+      <div class="field">
+        <label>Senha</label>
+        <input type="password" id="inp-pass" placeholder="Digite sua senha" autocomplete="current-password">
+      </div>
+      <button class="btn-login" onclick="doLogin()">Entrar</button>
+      <button class="btn-forgot" onclick="goReset()">Alterar senha</button>
+    </div>
+
+    <!-- PAINEL ALTERAR SENHA -->
+    <div class="reset-step" id="step-reset2">
+      <button class="reset-back" onclick="goLogin()">← Voltar ao login</button>
+      <div class="reset-title">Alterar senha</div>
+      <div class="reset-sub">Preencha os campos abaixo para definir uma nova senha.</div>
+      <div class="login-msg" id="reset2-msg"></div>
+      <div class="field">
+        <label>Usuário</label>
+        <input type="text" id="reset-user-input" placeholder="Digite seu usuário">
+      </div>
+      <div class="field">
+        <label>Senha atual</label>
+        <input type="password" id="reset-cur-pass" placeholder="Digite sua senha atual">
+      </div>
+      <div class="field">
+        <label>Nova senha</label>
+        <input type="password" id="new-pass1" placeholder="Digite a nova senha">
+      </div>
+      <div class="field">
+        <label>Confirmar nova senha</label>
+        <input type="password" id="new-pass2" placeholder="Repita a nova senha">
+      </div>
+      <button class="btn-login" onclick="saveNewPass()">Salvar nova senha</button>
+    </div>
+  </div>
+</div>
+  </div>
+</div>
+</div>
+
+<!-- ── APP ───────────────────────────────────────────── -->
+<div id="view-app">
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">💰</div>
+      <div class="sidebar-logo-text">Finanças<span>Controle Pessoal</span></div>
+    </div>
+    <div class="nav-section" style="margin-top:0.5rem;">Menu</div>
+    <button class="nav-item active green" onclick="showPage('ganhos',this)">
+      <span class="nav-dot"></span> Ganhos
+    </button>
+    <button class="nav-item red" onclick="showPage('gastos',this)">
+      <span class="nav-dot"></span> Gastos
+    </button>
+    <button class="nav-item blue" onclick="showPage('overview',this)">
+      <span class="nav-dot"></span> Visão Geral
+    </button>
+    <button class="nav-item purple" onclick="showPage('distribuicao',this)">
+      <span class="nav-dot"></span> Distribuição
+    </button>
+    <button class="nav-item orange" onclick="showPage('historico',this)">
+      <span class="nav-dot"></span> Histórico
+    </button>
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="avatar" id="sb-avatar">?</div>
+        <div class="user-name" id="sb-name">—</div>
+        <button class="logout-btn" title="Sair" onclick="doLogout()">⏻</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- GANHOS -->
+    <div class="page active" id="page-ganhos">
+      <div class="page-header">
+        <div class="page-title">Registrar Ganho</div>
+        <div class="page-sub">Adicione suas receitas e entradas</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Novo ganho</div>
+        <div class="form-grid">
+          <div><label class="f-label">Valor (R$)</label><input class="f-input" type="number" id="g-val" placeholder="0,00" min="0" step="0.01"></div>
+          <div><label class="f-label">Data e horário</label><input class="f-input" type="datetime-local" id="g-dt"></div>
+        </div>
+        <div class="form-grid form-full" style="margin-bottom:12px;">
+          <div><label class="f-label">Descrição</label><input class="f-input" type="text" id="g-desc" placeholder="Ex: salário, freelance..."></div>
+        </div>
+        <div style="margin-bottom:14px;">
+          <label class="f-label">Categoria</label>
+          <div class="tag-wrap" id="g-tags"></div>
+          <div class="add-cat-row">
+            <input class="f-input" type="text" id="g-new-cat" placeholder="Nova categoria...">
+            <button class="btn-add-cat" onclick="addCat('g')">+ Adicionar</button>
+          </div>
+        </div>
+        <button class="btn-submit green" onclick="salvar('g')">Registrar Ganho</button>
+      </div>
+      <div class="card">
+        <div class="card-title">Histórico de Ganhos</div>
+        <div id="lista-g"><div class="empty">Nenhum ganho registrado ainda.</div></div>
+      </div>
+    </div>
+
+    <!-- GASTOS -->
+    <div class="page" id="page-gastos">
+      <div class="page-header">
+        <div class="page-title">Registrar Gasto</div>
+        <div class="page-sub">Adicione suas despesas e saídas</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Novo gasto</div>
+        <div class="form-grid">
+          <div><label class="f-label">Valor (R$)</label><input class="f-input red" type="number" id="gs-val" placeholder="0,00" min="0" step="0.01"></div>
+          <div><label class="f-label">Data e horário</label><input class="f-input red" type="datetime-local" id="gs-dt"></div>
+        </div>
+        <div class="form-grid form-full" style="margin-bottom:12px;">
+          <div><label class="f-label">Descrição</label><input class="f-input red" type="text" id="gs-desc" placeholder="Ex: aluguel, mercado..."></div>
+        </div>
+        <div style="margin-bottom:14px;">
+          <label class="f-label">Categoria</label>
+          <div class="tag-wrap" id="gs-tags"></div>
+          <div class="add-cat-row">
+            <input class="f-input" type="text" id="gs-new-cat" placeholder="Nova categoria...">
+            <button class="btn-add-cat" onclick="addCat('gs')">+ Adicionar</button>
+          </div>
+        </div>
+        <button class="btn-submit red" onclick="salvar('gs')">Registrar Gasto</button>
+      </div>
+      <div class="card">
+        <div class="card-title">Histórico de Gastos</div>
+        <div id="lista-gs"><div class="empty">Nenhum gasto registrado ainda.</div></div>
+      </div>
+    </div>
+
+    <!-- OVERVIEW -->
+    <div class="page" id="page-overview">
+      <div class="page-header">
+        <div class="page-title">Visão Geral</div>
+        <div class="page-sub">Resumo financeiro e distribuição por categoria</div>
+      </div>
+      <div class="metric-row">
+        <div class="metric-card"><div class="metric-label">Total Ganhos</div><div class="metric-val green" id="ov-g">R$ 0,00</div></div>
+        <div class="metric-card"><div class="metric-label">Total Gastos</div><div class="metric-val red"   id="ov-gs">R$ 0,00</div></div>
+        <div class="metric-card"><div class="metric-label">Saldo</div><div class="metric-val normal" id="ov-s">R$ 0,00</div></div>
+      </div>
+      <div class="charts-row">
+        <div class="card">
+          <div class="card-title">Ganhos por Categoria</div>
+          <div class="legend" id="leg-g"></div>
+          <div class="chart-wrap"><canvas id="ch-g"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Gastos por Categoria</div>
+          <div class="legend" id="leg-gs"></div>
+          <div class="chart-wrap"><canvas id="ch-gs"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DISTRIBUIÇÃO -->
+    <div class="page" id="page-distribuicao">
+      <div class="page-header">
+        <div class="page-title">Distribuição do Saldo</div>
+        <div class="page-sub">Como aplicar o saldo disponível (ganhos − gastos)</div>
+      </div>
+      <div class="dist-info purple" id="dist-info">Distribuição calculada sobre o saldo disponível.</div>
+      <div class="metric-row">
+        <div class="metric-card"><div class="metric-label">Total Ganhos</div><div class="metric-val green" id="dt-g">R$ 0,00</div></div>
+        <div class="metric-card"><div class="metric-label">Total Gastos</div><div class="metric-val red"   id="dt-gs">R$ 0,00</div></div>
+        <div class="metric-card"><div class="metric-label">Saldo Disponível</div><div class="metric-val normal" id="dt-s">R$ 0,00</div></div>
+      </div>
+      <div class="dist-blocks">
+        <div class="dist-block">
+          <div class="dist-block-label green">Guardar</div>
+          <div class="dist-block-pct">50% do saldo</div>
+          <div class="dist-block-val green" id="db-guard">R$ 0,00</div>
+          <div class="prog-bar"><div class="prog-fill" id="pb-guard" style="background:var(--green);width:0%"></div></div>
+        </div>
+        <div class="dist-block">
+          <div class="dist-block-label blue">Investir</div>
+          <div class="dist-block-pct">25% do saldo</div>
+          <div class="dist-block-val blue" id="db-inv">R$ 0,00</div>
+          <div class="prog-bar"><div class="prog-fill" id="pb-inv" style="background:var(--blue);width:0%"></div></div>
+        </div>
+        <div class="dist-block">
+          <div class="dist-block-label red">Gastar</div>
+          <div class="dist-block-pct">25% do saldo</div>
+          <div class="dist-block-val red" id="db-gast">R$ 0,00</div>
+          <div class="prog-bar"><div class="prog-fill" id="pb-gast" style="background:var(--red);width:0%"></div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Distribuição Ideal do Saldo</div>
+        <div class="legend" id="leg-dist"></div>
+        <div class="chart-wrap" style="height:180px;"><canvas id="ch-dist"></canvas></div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /view-app -->
+
+  <!-- HISTÓRICO (dentro do main, antes do fechamento) -->
+  <script>
+  // Injeta a página de histórico dinamicamente para não quebrar o HTML acima
+  document.querySelector('.main').insertAdjacentHTML('beforeend', `
+    <div class="page" id="page-historico">
+      <div class="page-header">
+        <div class="page-title">Histórico</div>
+        <div class="page-sub">Visualização mensal e anual das suas finanças</div>
+      </div>
+      <div class="hist-controls">
+        <div class="hist-toggle">
+          <button id="btn-mensal" class="active" onclick="setHistMode('mensal')">Mensal</button>
+          <button id="btn-anual"  onclick="setHistMode('anual')">Anual</button>
+        </div>
+        <div class="hist-nav">
+          <button onclick="histNav(-1)">&#8249;</button>
+          <span id="hist-period-label">—</span>
+          <button onclick="histNav(1)">&#8250;</button>
+        </div>
+      </div>
+
+      <!-- VISÃO MENSAL -->
+      <div id="hist-mensal-view">
+        <div class="hist-summary" id="hist-m-summary"></div>
+        <div class="card">
+          <div class="card-title">Ganhos vs Gastos — dia a dia</div>
+          <div class="chart-wrap hist-bar-chart"><canvas id="ch-hist-m"></canvas></div>
+        </div>
+        <div class="card" style="margin-top:0;">
+          <div class="card-title">Registros do mês</div>
+          <div id="hist-m-list"></div>
+        </div>
+      </div>
+
+      <!-- VISÃO ANUAL -->
+      <div id="hist-anual-view" style="display:none;">
+        <div class="hist-summary" id="hist-a-summary"></div>
+        <div class="card">
+          <div class="card-title">Ganhos vs Gastos — mês a mês</div>
+          <div class="chart-wrap hist-bar-chart"><canvas id="ch-hist-a"></canvas></div>
+        </div>
+        <div class="card" style="margin-top:0;">
+          <div class="card-title" id="hist-a-detail-title">Clique em um mês para ver o detalhe</div>
+          <div id="hist-a-detail"></div>
+        </div>
+      </div>
+    </div>
+  `);
+  </script>
+
+<script>
+// ── USUÁRIOS ──────────────────────────────────────────
+const USERS = [
+  { username: 'Lucas',    password: '019100', secQ: 'Qual o nome do seu pet ou primeiro animal de estimação?', secA: 'lucas' },
+  { username: 'Quézia',   password: '1305',   secQ: 'Qual a cidade onde você nasceu?',                         secA: 'quezia' },
+  { username: 'Giovanna', password: '0807',   secQ: 'Qual o nome da sua mãe?',                                 secA: 'giovanna' }
+];
+
+// Senhas ficam no localStorage para persistir redefinições
+function getPass(username) {
+  return localStorage.getItem('finapp_pass_' + username) || USERS.find(u => u.username === username)?.password;
+}
+function setPass(username, newPass) {
+  localStorage.setItem('finapp_pass_' + username, newPass);
+}
+
+let currentUser = null;
+let selCatG = null, selCatGS = null;
+let chG, chGS, chD;
+
+function storageKey(user) { return 'finapp_' + user; }
+
+function defaultData() {
+  return {
+    ganhos: [], gastos: [],
+    catG:  ['Salário','Freelance','Outros'],
+    catGS: ['Moradia','Alimentação','Transporte','Lazer','Outros']
+  };
+}
+
+let ud = defaultData();
+
+function loadData() {
+  ud = defaultData();
+  try {
+    const raw = localStorage.getItem(storageKey(currentUser));
+    if (raw) {
+      const d = JSON.parse(raw);
+      ud.ganhos = d.ganhos || [];
+      ud.gastos = d.gastos || [];
+      ud.catG   = d.catG   || ud.catG;
+      ud.catGS  = d.catGS  || ud.catGS;
+    }
+  } catch(e) {}
+}
+
+function saveData() {
+  try { localStorage.setItem(storageKey(currentUser), JSON.stringify(ud)); } catch(e) {}
+}
+
+// ── LOGIN ─────────────────────────────────────────────
+document.getElementById('inp-pass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+function doLogin() {
+  const u = document.getElementById('inp-user').value.trim();
+  const p = document.getElementById('inp-pass').value;
+  const found = USERS.find(x => x.username.toLowerCase() === u.toLowerCase() && getPass(x.username) === p);
+  if (!found) { document.getElementById('login-error').style.display = 'block'; return; }
+  document.getElementById('login-error').style.display = 'none';
+  currentUser = found.username;
+  document.getElementById('sb-name').textContent   = currentUser;
+  document.getElementById('sb-avatar').textContent = currentUser[0].toUpperCase();
+  document.getElementById('view-login').style.display = 'none';
+  document.getElementById('view-app').style.display   = 'block';
+  selCatG = null; selCatGS = null;
+  document.querySelectorAll('.nav-item').forEach((b,i) => b.classList.toggle('active', i===0));
+  document.querySelectorAll('.page').forEach((p,i)     => p.classList.toggle('active', i===0));
+  setNow(); loadData(); renderAll();
+}
+
+function doLogout() {
+  currentUser = null; ud = defaultData();
+  document.getElementById('inp-user').value = '';
+  document.getElementById('inp-pass').value = '';
+  document.getElementById('view-app').style.display   = 'none';
+  document.getElementById('view-login').style.display = 'flex';
+  goLogin();
+  [chG, chGS, chD, chHistM, chHistA].forEach(c => { if(c) c.destroy(); });
+  chG = chGS = chD = chHistM = chHistA = null;
+}
+
+// ── REDEFINIÇÃO DE SENHA ──────────────────────────────
+function showStep(id) {
+  ['step-login','step-reset2'].forEach(s => {
+    document.getElementById(s).classList.toggle('active', s === id);
+  });
+  document.getElementById('login-error').style.display = 'none';
+}
+
+function goLogin() {
+  showStep('step-login');
+}
+
+function goReset() {
+  document.getElementById('reset-user-input').value = '';
+  document.getElementById('reset-cur-pass').value   = '';
+  document.getElementById('new-pass1').value         = '';
+  document.getElementById('new-pass2').value         = '';
+  showMsg('reset2-msg','','');
+  showStep('step-reset2');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('new-pass2').addEventListener('keydown', e => { if(e.key==='Enter') saveNewPass(); });
+});
+
+function saveNewPass() {
+  const uName  = document.getElementById('reset-user-input').value.trim();
+  const curP   = document.getElementById('reset-cur-pass').value;
+  const p1     = document.getElementById('new-pass1').value;
+  const p2     = document.getElementById('new-pass2').value;
+
+  const u = USERS.find(x => x.username.toLowerCase() === uName.toLowerCase());
+  if (!u) { showMsg('reset2-msg','error','Usuário não encontrado.'); return; }
+  if (getPass(u.username) !== curP) { showMsg('reset2-msg','error','Senha atual incorreta.'); return; }
+  if (!p1) { showMsg('reset2-msg','error','Digite a nova senha.'); return; }
+  if (p1 !== p2) { showMsg('reset2-msg','error','As senhas não coincidem.'); return; }
+  if (p1.length < 4) { showMsg('reset2-msg','error','A senha deve ter pelo menos 4 caracteres.'); return; }
+
+  setPass(u.username, p1);
+  showMsg('reset2-msg','success','Senha alterada com sucesso!');
+  setTimeout(() => {
+    document.getElementById('inp-user').value = u.username;
+    document.getElementById('inp-pass').value = '';
+    goLogin();
+  }, 1800);
+}
+
+function showMsg(id, type, text) {
+  const el = document.getElementById(id);
+  el.className = 'login-msg' + (type ? ' ' + type : '');
+  el.textContent = text;
+  el.style.display = text ? 'block' : 'none';
+}
+
+// ── NAVEGAÇÃO ─────────────────────────────────────────
+function showPage(name, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  btn.classList.add('active');
+  if (name === 'overview')     renderCharts();
+  if (name === 'distribuicao') renderDist();
+  if (name === 'historico')    { histYear = new Date().getFullYear(); histMonth = new Date().getMonth(); setHistMode('mensal'); }
+}
+
+// ── UTILS ─────────────────────────────────────────────
+function fmt(v) { return 'R$ ' + Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function fmtDt(dt) {
+  if (!dt) return '';
+  const d = new Date(dt);
+  return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+}
+function groupBy(arr, key) {
+  return arr.reduce((a,x) => { a[x[key]] = (a[x[key]]||0) + x.valor; return a; }, {});
+}
+function setNow() {
+  const n = new Date(); n.setMinutes(n.getMinutes() - n.getTimezoneOffset());
+  const s = n.toISOString().slice(0,16);
+  document.getElementById('g-dt').value  = s;
+  document.getElementById('gs-dt').value = s;
+}
+function totalG()  { return ud.ganhos.reduce((s,x) => s+x.valor, 0); }
+function totalGS() { return ud.gastos.reduce((s,x) => s+x.valor, 0); }
+
+// ── CATEGORIAS ────────────────────────────────────────
+function renderTags(tipo) {
+  const isG  = tipo === 'g';
+  const cats = isG ? ud.catG : ud.catGS;
+  const sel  = isG ? selCatG : selCatGS;
+  document.getElementById(tipo+'-tags').innerHTML = cats.map(c =>
+    `<span class="tag${c===sel?(' sel-'+(isG?'green':'red')):''}" onclick="selCat('${tipo}','${c.replace(/'/g,"\\'")}')">${c}</span>`
+  ).join('');
+}
+function selCat(tipo, cat) {
+  if (tipo==='g') selCatG  = selCatG  === cat ? null : cat;
+  else            selCatGS = selCatGS === cat ? null : cat;
+  renderTags(tipo);
+}
+function addCat(tipo) {
+  const el  = document.getElementById(tipo+'-new-cat');
+  const val = el.value.trim(); if (!val) return;
+  if (tipo==='g') { if (!ud.catG.includes(val))  ud.catG.push(val);  selCatG  = val; }
+  else            { if (!ud.catGS.includes(val)) ud.catGS.push(val); selCatGS = val; }
+  el.value = ''; saveData(); renderTags(tipo);
+}
+
+// ── SALVAR / DELETAR ──────────────────────────────────
+function salvar(tipo) {
+  const isG   = tipo === 'g';
+  const valEl = document.getElementById(tipo+'-val');
+  const dtEl  = document.getElementById(tipo+'-dt');
+  const dsEl  = document.getElementById(tipo+'-desc');
+  const valor = parseFloat(valEl.value);
+  if (!valor || valor <= 0) { valEl.focus(); return; }
+  const cat   = isG ? selCatG : selCatGS;
+  const entry = { id: Date.now(), valor, data: dtEl.value || new Date().toISOString().slice(0,16), desc: dsEl.value.trim() || (isG?'Ganho':'Gasto'), cat: cat || 'Sem categoria' };
+  if (isG) ud.ganhos.unshift(entry); else ud.gastos.unshift(entry);
+  valEl.value = ''; dsEl.value = '';
+  if (isG) selCatG = null; else selCatGS = null;
+  setNow(); saveData(); renderAll();
+}
+function deletar(tipo, id) {
+  if (tipo==='g') ud.ganhos = ud.ganhos.filter(x => x.id !== id);
+  else            ud.gastos = ud.gastos.filter(x => x.id !== id);
+  saveData(); renderAll();
+}
+
+// ── LISTAS ────────────────────────────────────────────
+function renderLista(tipo) {
+  const isG  = tipo === 'g';
+  const arr  = isG ? ud.ganhos : ud.gastos;
+  const el   = document.getElementById('lista-'+tipo);
+  const icon = isG ? '📈' : '📉';
+  if (!arr.length) { el.innerHTML = '<div class="empty">Nenhum registro ainda.</div>'; return; }
+  el.innerHTML = arr.map(it => `
+    <div class="list-item">
+      <div class="list-icon ${isG?'green':'red'}">${icon}</div>
+      <div class="list-info">
+        <div class="list-title">${it.desc}</div>
+        <div class="list-sub">
+          <span class="list-badge ${isG?'green':'red'}">${it.cat}</span>
+          ${fmtDt(it.data)}
+        </div>
+      </div>
+      <span class="list-amount ${isG?'green':'red'}">${isG?'+':'-'}${fmt(it.valor)}</span>
+      <button class="del-btn" onclick="deletar('${tipo}',${it.id})">×</button>
+    </div>`).join('');
+}
+
+// ── MÉTRICAS ──────────────────────────────────────────
+function renderMetrics() {
+  const tg = totalG(), tgs = totalGS(), s = tg - tgs;
+  document.getElementById('ov-g').textContent  = fmt(tg);
+  document.getElementById('ov-gs').textContent = fmt(tgs);
+  const el = document.getElementById('ov-s');
+  el.textContent = fmt(s);
+  el.className = 'metric-val ' + (s >= 0 ? 'green' : 'red');
+}
+
+// ── CHARTS ───────────────────────────────────────────
+const COLORS = ['#00C48C','#4A9EFF','#FF5252','#8B7CF6','#FFB830','#FF6B9D','#56CF4B','#A0A5B5'];
+const noData  = { labels:['Sem dados'], datasets:[{data:[1],backgroundColor:['#2A2D36']}] };
+const donutOpts = { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } } };
+
+function renderCharts() {
+  renderMetrics();
+  const gGr  = groupBy(ud.ganhos,'cat'), gsGr = groupBy(ud.gastos,'cat');
+  const gL   = Object.keys(gGr),  gV  = Object.values(gGr);
+  const gsL  = Object.keys(gsGr), gsV = Object.values(gsGr);
+
+  document.getElementById('leg-g').innerHTML  = gL.map((l,i)  => `<div class="leg-item"><span class="leg-dot" style="background:${COLORS[i%COLORS.length]}"></span>${l}: ${fmt(gV[i])}</div>`).join('');
+  document.getElementById('leg-gs').innerHTML = gsL.map((l,i) => `<div class="leg-item"><span class="leg-dot" style="background:${COLORS[i%COLORS.length]}"></span>${l}: ${fmt(gsV[i])}</div>`).join('');
+
+  if (chG)  chG.destroy();
+  if (chGS) chGS.destroy();
+  chG  = new Chart(document.getElementById('ch-g'),  { type:'doughnut', data: gL.length  ? {labels:gL,  datasets:[{data:gV,  backgroundColor:COLORS.slice(0,gL.length)}]}  : noData, options:donutOpts });
+  chGS = new Chart(document.getElementById('ch-gs'), { type:'doughnut', data: gsL.length ? {labels:gsL, datasets:[{data:gsV, backgroundColor:COLORS.slice(0,gsL.length)}]} : noData, options:donutOpts });
+}
+
+// ── DISTRIBUIÇÃO ──────────────────────────────────────
+function renderDist() {
+  const tg  = totalG(), tgs = totalGS(), saldo = tg - tgs, s = Math.max(0, saldo);
+  document.getElementById('dt-g').textContent  = fmt(tg);
+  document.getElementById('dt-gs').textContent = fmt(tgs);
+  const salEl = document.getElementById('dt-s');
+  salEl.textContent = fmt(saldo);
+  salEl.className = 'metric-val ' + (saldo >= 0 ? 'green' : 'red');
+
+  const info = document.getElementById('dist-info');
+  if (saldo < 0) {
+    info.className = 'dist-info red';
+    info.textContent = 'Saldo negativo: os gastos superam os ganhos. Revise seus gastos para liberar saldo.';
+  } else {
+    info.className = 'dist-info purple';
+    info.textContent = 'Distribuição calculada sobre o saldo disponível: ' + fmt(s) + ' (ganhos − gastos).';
+  }
+
+  const mG = s*0.5, mI = s*0.25, mGs = s*0.25;
+  document.getElementById('db-guard').textContent = fmt(mG);
+  document.getElementById('db-inv').textContent   = fmt(mI);
+  document.getElementById('db-gast').textContent  = fmt(mGs);
+  document.getElementById('pb-guard').style.width = s > 0 ? '100%' : '0%';
+  document.getElementById('pb-inv').style.width   = s > 0 ? '100%' : '0%';
+  document.getElementById('pb-gast').style.width  = s > 0 ? '100%' : '0%';
+
+  document.getElementById('leg-dist').innerHTML =
+    `<div class="leg-item"><span class="leg-dot" style="background:#00C48C"></span>Guardar 50%: ${fmt(mG)}</div>` +
+    `<div class="leg-item"><span class="leg-dot" style="background:#4A9EFF"></span>Investir 25%: ${fmt(mI)}</div>` +
+    `<div class="leg-item"><span class="leg-dot" style="background:#FF5252"></span>Gastar 25%: ${fmt(mGs)}</div>`;
+
+  if (chD) chD.destroy();
+  chD = new Chart(document.getElementById('ch-dist'), {
+    type: 'doughnut',
+    data: s > 0 ? { labels:['Guardar 50%','Investir 25%','Gastar 25%'], datasets:[{data:[mG,mI,mGs], backgroundColor:['#00C48C','#4A9EFF','#FF5252']}] } : noData,
+    options: donutOpts
+  });
+}
+
+// ── RENDER GERAL ──────────────────────────────────────
+function renderAll() {
+  renderTags('g'); renderTags('gs');
+  renderLista('g'); renderLista('gs');
+  renderMetrics();
+}
+
+// ── HISTÓRICO ─────────────────────────────────────────
+const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+let histMode = 'mensal';
+let histYear  = new Date().getFullYear();
+let histMonth = new Date().getMonth(); // 0-based
+let chHistM = null, chHistA = null;
+
+function setHistMode(mode) {
+  histMode = mode;
+  document.getElementById('btn-mensal').classList.toggle('active', mode==='mensal');
+  document.getElementById('btn-anual').classList.toggle('active',  mode==='anual');
+  document.getElementById('hist-mensal-view').style.display = mode==='mensal' ? '' : 'none';
+  document.getElementById('hist-anual-view').style.display  = mode==='anual'  ? '' : 'none';
+  renderHistorico();
+}
+
+function histNav(dir) {
+  if (histMode === 'mensal') {
+    histMonth += dir;
+    if (histMonth < 0)  { histMonth = 11; histYear--; }
+    if (histMonth > 11) { histMonth = 0;  histYear++; }
+  } else {
+    histYear += dir;
+  }
+  renderHistorico();
+}
+
+function renderHistorico() {
+  const label = histMode === 'mensal'
+    ? MESES[histMonth] + ' ' + histYear
+    : 'Ano ' + histYear;
+  document.getElementById('hist-period-label').textContent = label;
+
+  if (histMode === 'mensal') renderHistMensal();
+  else                       renderHistAnual();
+}
+
+function filterByMonth(arr, y, m) {
+  return arr.filter(x => {
+    const d = new Date(x.data);
+    return d.getFullYear() === y && d.getMonth() === m;
+  });
+}
+function filterByYear(arr, y) {
+  return arr.filter(x => new Date(x.data).getFullYear() === y);
+}
+function sumVal(arr) { return arr.reduce((s,x) => s+x.valor, 0); }
+
+function renderHistMensal() {
+  const ganhos = filterByMonth(ud.ganhos, histYear, histMonth);
+  const gastos = filterByMonth(ud.gastos, histYear, histMonth);
+  const tg = sumVal(ganhos), tgs = sumVal(gastos), saldo = tg - tgs;
+
+  // Métricas
+  document.getElementById('hist-m-summary').innerHTML = `
+    <div class="metric-card"><div class="metric-label">Ganhos</div><div class="metric-val green">${fmt(tg)}</div></div>
+    <div class="metric-card"><div class="metric-label">Gastos</div><div class="metric-val red">${fmt(tgs)}</div></div>
+    <div class="metric-card"><div class="metric-label">Saldo</div><div class="metric-val ${saldo>=0?'green':'red'}">${fmt(saldo)}</div></div>
+    <div class="metric-card"><div class="metric-label">Transações</div><div class="metric-val normal">${ganhos.length + gastos.length}</div></div>
+  `;
+
+  // Gráfico dia a dia
+  const daysInMonth = new Date(histYear, histMonth+1, 0).getDate();
+  const labels = Array.from({length: daysInMonth}, (_,i) => i+1);
+  const gByDay  = Array(daysInMonth).fill(0);
+  const gsByDay = Array(daysInMonth).fill(0);
+  ganhos.forEach(x => { const d = new Date(x.data).getDate()-1; gByDay[d]  += x.valor; });
+  gastos.forEach(x => { const d = new Date(x.data).getDate()-1; gsByDay[d] += x.valor; });
+
+  if (chHistM) chHistM.destroy();
+  chHistM = new Chart(document.getElementById('ch-hist-m'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label:'Ganhos', data:gByDay,  backgroundColor:'rgba(0,196,140,0.7)', borderRadius:4 },
+        { label:'Gastos', data:gsByDay, backgroundColor:'rgba(255,82,82,0.7)',  borderRadius:4 }
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ labels:{ color:'#8A8F9E', font:{ family:'Sora' } } } },
+      scales:{
+        x:{ ticks:{ color:'#555A6A' }, grid:{ color:'rgba(255,255,255,0.04)' } },
+        y:{ ticks:{ color:'#555A6A', callback: v => 'R$'+v.toLocaleString('pt-BR') }, grid:{ color:'rgba(255,255,255,0.04)' } }
+      }
+    }
+  });
+
+  // Lista combinada ordenada por data desc
+  const all = [
+    ...ganhos.map(x => ({...x, tipo:'g'})),
+    ...gastos.map(x => ({...x, tipo:'gs'}))
+  ].sort((a,b) => new Date(b.data) - new Date(a.data));
+
+  const el = document.getElementById('hist-m-list');
+  if (!all.length) { el.innerHTML = '<div class="empty">Nenhum registro neste mês.</div>'; return; }
+  el.innerHTML = all.map(it => {
+    const isG = it.tipo === 'g';
+    return `<div class="list-item">
+      <div class="list-icon ${isG?'green':'red'}">${isG?'📈':'📉'}</div>
+      <div class="list-info">
+        <div class="list-title">${it.desc}</div>
+        <div class="list-sub"><span class="list-badge ${isG?'green':'red'}">${it.cat}</span>${fmtDt(it.data)}</div>
+      </div>
+      <span class="list-amount ${isG?'green':'red'}">${isG?'+':'-'}${fmt(it.valor)}</span>
+    </div>`;
+  }).join('');
+}
+
+function renderHistAnual() {
+  const ganhos = filterByYear(ud.ganhos, histYear);
+  const gastos = filterByYear(ud.gastos, histYear);
+  const tg = sumVal(ganhos), tgs = sumVal(gastos), saldo = tg - tgs;
+
+  document.getElementById('hist-a-summary').innerHTML = `
+    <div class="metric-card"><div class="metric-label">Ganhos no Ano</div><div class="metric-val green">${fmt(tg)}</div></div>
+    <div class="metric-card"><div class="metric-label">Gastos no Ano</div><div class="metric-val red">${fmt(tgs)}</div></div>
+    <div class="metric-card"><div class="metric-label">Saldo do Ano</div><div class="metric-val ${saldo>=0?'green':'red'}">${fmt(saldo)}</div></div>
+    <div class="metric-card"><div class="metric-label">Melhor Mês</div><div class="metric-val normal" id="hist-best-month">—</div></div>
+  `;
+
+  // Dados mês a mês
+  const gByM  = Array(12).fill(0);
+  const gsByM = Array(12).fill(0);
+  ganhos.forEach(x => { gByM[new Date(x.data).getMonth()]  += x.valor; });
+  gastos.forEach(x => { gsByM[new Date(x.data).getMonth()] += x.valor; });
+
+  // Melhor mês (maior saldo)
+  let bestIdx = 0, bestSaldo = -Infinity;
+  for (let i=0; i<12; i++) {
+    const s = gByM[i] - gsByM[i];
+    if (gByM[i] > 0 && s > bestSaldo) { bestSaldo = s; bestIdx = i; }
+  }
+  const bestEl = document.getElementById('hist-best-month');
+  if (bestEl && (tg > 0)) bestEl.textContent = MESES[bestIdx].slice(0,3);
+
+  if (chHistA) chHistA.destroy();
+  chHistA = new Chart(document.getElementById('ch-hist-a'), {
+    type: 'bar',
+    data: {
+      labels: MESES.map(m => m.slice(0,3)),
+      datasets: [
+        { label:'Ganhos', data:gByM,  backgroundColor:'rgba(0,196,140,0.7)', borderRadius:4 },
+        { label:'Gastos', data:gsByM, backgroundColor:'rgba(255,82,82,0.7)',  borderRadius:4 }
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      onClick: (_,els) => { if(els.length) showMonthDetail(els[0].index); },
+      plugins:{
+        legend:{ labels:{ color:'#8A8F9E', font:{ family:'Sora' } } },
+        tooltip:{ callbacks:{ label: ctx => ' R$ ' + ctx.raw.toLocaleString('pt-BR',{minimumFractionDigits:2}) } }
+      },
+      scales:{
+        x:{ ticks:{ color:'#555A6A' }, grid:{ color:'rgba(255,255,255,0.04)' } },
+        y:{ ticks:{ color:'#555A6A', callback: v => 'R$'+v.toLocaleString('pt-BR') }, grid:{ color:'rgba(255,255,255,0.04)' } }
+      }
+    }
+  });
+
+  // Tabela resumo por mês
+  document.getElementById('hist-a-detail-title').textContent = 'Resumo mensal — clique numa barra para ver registros';
+  let rows = '';
+  for (let m=0; m<12; m++) {
+    if (gByM[m] === 0 && gsByM[m] === 0) continue;
+    const s = gByM[m] - gsByM[m];
+    rows += `<div class="month-row" onclick="showMonthDetail(${m})">
+      <span class="month-row-name">${MESES[m]}</span>
+      <div class="month-row-nums">
+        <span class="month-row-num" style="color:var(--green)">+${fmt(gByM[m])}</span>
+        <span class="month-row-num" style="color:var(--red)">-${fmt(gsByM[m])}</span>
+        <span class="month-badge ${s>=0?'pos':'neg'}">${s>=0?'+':''}${fmt(s)}</span>
+      </div>
+    </div>`;
+  }
+  document.getElementById('hist-a-detail').innerHTML = rows || '<div class="empty">Nenhum registro neste ano.</div>';
+}
+
+function showMonthDetail(m) {
+  histMonth = m;
+  setHistMode('mensal');
+}
+</script>
+</body>
+</html>
