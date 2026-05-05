@@ -217,91 +217,112 @@
   /* ── MOBILE ─────────────────────────────── */
   @media (max-width: 768px) {
     /* Login */
-    #view-login { padding: 1rem; align-items: flex-start; padding-top: 3rem; }
+    #view-login { padding: 1rem; align-items: center; padding-top: 2rem; }
     .login-box { padding: 1.75rem 1.25rem; border-radius: 20px; }
 
-    /* Sidebar vira bottom nav */
+    /* Sidebar vira bottom nav fixo */
     .sidebar {
       top: auto; left: 0; right: 0; bottom: 0;
-      width: 100%; height: auto;
+      width: 100%; height: 62px;
       flex-direction: row;
-      padding: 0;
+      padding: 0; margin: 0;
       border-right: none;
       border-top: 1px solid var(--border);
       z-index: 200;
+      overflow: hidden;
     }
-    .sidebar-logo  { display: none; }
-    .nav-section   { display: none; }
+    .sidebar-logo   { display: none; }
+    .nav-section    { display: none; }
     .sidebar-footer { display: none; }
 
     .nav-item {
       flex: 1; flex-direction: column;
       align-items: center; justify-content: center;
-      gap: 4px; padding: 10px 4px 12px;
-      font-size: 10px; margin-bottom: 0;
-      border-radius: 0; width: auto;
-      text-align: center;
+      gap: 3px; padding: 8px 2px 10px;
+      font-size: 10px; font-weight: 500;
+      margin-bottom: 0; border-radius: 0;
+      width: auto; text-align: center;
+      color: var(--text3);
     }
     .nav-dot { display: none; }
-    .nav-item::before {
-      font-size: 18px; line-height: 1;
-    }
+    .nav-item::before { font-size: 19px; line-height: 1; display: block; }
     .nav-item.green::before  { content: '📈'; }
     .nav-item.red::before    { content: '📉'; }
     .nav-item.blue::before   { content: '📊'; }
     .nav-item.purple::before { content: '💡'; }
     .nav-item.orange::before { content: '🗓️'; }
-    .nav-item.active {
-      background: transparent;
-      color: var(--blue);
-      border-top: 2px solid var(--blue);
-    }
+    .nav-item.active { background: transparent; border-top: 2px solid; }
     .nav-item.active.green  { color: var(--green);  border-top-color: var(--green); }
     .nav-item.active.red    { color: var(--red);    border-top-color: var(--red); }
     .nav-item.active.blue   { color: var(--blue);   border-top-color: var(--blue); }
     .nav-item.active.purple { color: var(--purple); border-top-color: var(--purple); }
     .nav-item.active.orange { color: #FFB830;       border-top-color: #FFB830; }
 
-    /* Main content */
+    /* Main — sem margin da sidebar, com espaço pro bottom nav */
     .main {
-      margin-left: 0;
-      padding: 1rem 0.75rem;
-      padding-bottom: 80px; /* espaço para o bottom nav */
+      margin-left: 0 !important;
+      padding: 1.25rem 1rem !important;
+      padding-bottom: 75px !important;
+      width: 100%;
     }
 
-    /* Títulos */
-    .page-title { font-size: 18px; }
-    .page-sub   { font-size: 12px; }
+    /* Topbar */
+    .topbar { margin-bottom: 1rem; }
+    .page-title { font-size: 20px; }
+    .page-sub   { font-size: 12px; margin-top: 2px; }
 
     /* Cards */
     .card { padding: 1rem; border-radius: 12px; }
+    .card-title { font-size: 10px; }
 
-    /* Métricas em 1 coluna no mobile */
+    /* Formulários — 1 coluna, inputs grandes para não dar zoom no iOS */
+    .form-grid { grid-template-columns: 1fr !important; gap: 10px; }
+    .f-input { font-size: 16px !important; padding: 12px 14px; }
+    .f-label { font-size: 11px; }
+
+    /* Tags */
+    .tag { font-size: 13px; padding: 6px 14px; }
+    .add-cat-row { gap: 8px; }
+    .btn-add-cat { font-size: 13px; padding: 10px 14px; }
+
+    /* Botão submit */
+    .btn-submit { width: 100% !important; padding: 14px; font-size: 15px; }
+
+    /* Métricas 2x2 */
     .metric-row { grid-template-columns: 1fr 1fr; gap: 8px; }
-    .metric-val { font-size: 16px; }
+    .metric-card { padding: 10px 12px; }
+    .metric-val { font-size: 15px; }
+    .metric-label { font-size: 10px; }
 
-    /* Form grid em 1 coluna */
-    .form-grid { grid-template-columns: 1fr; }
+    /* Gráficos empilhados */
+    .charts-row { grid-template-columns: 1fr; gap: 1rem; }
+    .chart-wrap { height: 220px; }
 
-    /* Charts lado a lado → empilhados */
-    .charts-row { grid-template-columns: 1fr; }
-
-    /* Distribuição em 1 coluna */
-    .dist-blocks { grid-template-columns: 1fr; gap: 8px; }
-    .dist-block-val { font-size: 17px; }
+    /* Distribuição 1 coluna */
+    .dist-blocks { grid-template-columns: 1fr; gap: 10px; }
+    .dist-block { padding: 1rem; }
+    .dist-block-val { font-size: 18px; }
 
     /* Histórico */
     .hist-summary { grid-template-columns: 1fr 1fr; gap: 8px; }
-    .hist-controls { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .hist-controls { flex-direction: column; align-items: stretch; gap: 10px; }
+    .hist-toggle { display: flex; }
+    .hist-toggle button { flex: 1; }
     .hist-nav { margin-left: 0; width: 100%; justify-content: space-between; }
-    .hist-nav span { min-width: auto; flex: 1; }
+    .hist-nav span { min-width: auto; flex: 1; text-align: center; font-size: 13px; }
+    .hist-bar-chart { height: 220px; }
 
-    /* Lista itens */
+    /* Lista */
+    .list-item { gap: 8px; padding: 10px 0; }
+    .list-icon { width: 32px; height: 32px; font-size: 14px; border-radius: 8px; }
     .list-title { font-size: 13px; }
     .list-amount { font-size: 13px; }
+    .list-sub { font-size: 11px; }
 
-    /* Topbar usuário — esconder no mobile (já está no bottom nav) */
-    .topbar { margin-bottom: 1rem; }
+    /* Mês */
+    .month-row-nums { gap: 8px; }
+    .month-row-num { font-size: 11px; }
+    .month-badge { font-size: 10px; padding: 2px 6px; }
   }
   .nav-item.active.purple .nav-dot { background: var(--purple); }
   .nav-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text3); flex-shrink: 0; transition: background 0.2s; }
