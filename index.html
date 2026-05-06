@@ -2432,46 +2432,79 @@ function filterByYear(arr,y) { return arr.filter(x=>new Date(x.data).getFullYear
 function sumVal(arr) { return arr.reduce((s,x)=>s+x.valor,0); }
 function renderHistMensal() {
   const ganhos=filterByMonth(ud.ganhos,histYear,histMonth), gastos=filterByMonth(ud.gastos,histYear,histMonth);
-  const tg=sumVal(ganhos),tgs=sumVal(gastos),saldo=tg-tgs;
+  const invs=filterByMonth(ud.investimentos||[],histYear,histMonth);
+  const tg=sumVal(ganhos),tgs=sumVal(gastos),tinv=sumVal(invs),saldo=tg-tgs-tinv;
   document.getElementById('hist-m-summary').innerHTML=`
     <div class="metric-card"><div class="metric-label">Ganhos</div><div class="metric-val green">${fmt(tg)}</div></div>
     <div class="metric-card"><div class="metric-label">Gastos</div><div class="metric-val red">${fmt(tgs)}</div></div>
+    <div class="metric-card"><div class="metric-label">Investido</div><div class="metric-val blue">${fmt(tinv)}</div></div>
     <div class="metric-card"><div class="metric-label">Saldo</div><div class="metric-val ${saldo>=0?'green':'red'}">${fmt(saldo)}</div></div>
-    <div class="metric-card"><div class="metric-label">Transações</div><div class="metric-val normal">${ganhos.length+gastos.length}</div></div>`;
+    <div class="metric-card"><div class="metric-label">Transações</div><div class="metric-val normal">${ganhos.length+gastos.length+invs.length}</div></div>`;
   const dias=new Date(histYear,histMonth+1,0).getDate();
-  const gD=Array(dias).fill(0), gsD=Array(dias).fill(0);
+  const gD=Array(dias).fill(0), gsD=Array(dias).fill(0), invD=Array(dias).fill(0);
   ganhos.forEach(x=>{const d=new Date(x.data).getDate()-1;gD[d]+=x.valor;});
   gastos.forEach(x=>{const d=new Date(x.data).getDate()-1;gsD[d]+=x.valor;});
+  invs.forEach(x=>{const d=new Date(x.data).getDate()-1;invD[d]+=x.valor;});
   if(chHistM) chHistM.destroy();
-  chHistM=new Chart(document.getElementById('ch-hist-m'),{type:'bar',data:{labels:Array.from({length:dias},(_,i)=>i+1),datasets:[{label:'Ganhos',data:gD,backgroundColor:'rgba(0,196,140,0.7)',borderRadius:4},{label:'Gastos',data:gsD,backgroundColor:'rgba(255,82,82,0.7)',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#8A8F9E',font:{family:'Sora'}}}},scales:{x:{ticks:{color:'#555A6A'},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#555A6A',callback:v=>'R$'+v.toLocaleString('pt-BR')},grid:{color:'rgba(255,255,255,0.04)'}}}}});
-  const all=[...ganhos.map(x=>({...x,tipo:'g'})),...gastos.map(x=>({...x,tipo:'gs'}))].sort((a,b)=>new Date(b.data)-new Date(a.data));
+  chHistM=new Chart(document.getElementById('ch-hist-m'),{type:'bar',data:{labels:Array.from({length:dias},(_,i)=>i+1),datasets:[
+    {label:'Ganhos',data:gD,backgroundColor:'rgba(0,196,140,0.7)',borderRadius:4},
+    {label:'Gastos',data:gsD,backgroundColor:'rgba(255,82,82,0.7)',borderRadius:4},
+    {label:'Investido',data:invD,backgroundColor:'rgba(74,158,255,0.7)',borderRadius:4}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#8A8F9E',font:{family:'Sora'}}}},scales:{x:{ticks:{color:'#555A6A'},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#555A6A',callback:v=>'R$'+v.toLocaleString('pt-BR')},grid:{color:'rgba(255,255,255,0.04)'}}}}});
+  const all=[
+    ...ganhos.map(x=>({...x,tipo:'g'})),
+    ...gastos.map(x=>({...x,tipo:'gs'})),
+    ...invs.map(x=>({...x,tipo:'inv'}))
+  ].sort((a,b)=>new Date(b.data)-new Date(a.data));
   const el=document.getElementById('hist-m-list');
   if(!all.length){el.innerHTML='<div class="empty">Nenhum registro neste mês.</div>';return;}
-  el.innerHTML=all.map(it=>{const isG=it.tipo==='g';return`<div class="list-item"><div class="list-icon ${isG?'green':'red'}">${isG?'📈':'📉'}</div><div class="list-info"><div class="list-title">${it.desc}</div><div class="list-sub"><span class="list-badge ${isG?'green':'red'}">${it.cat}</span>${fmtDt(it.data)}</div></div><span class="list-amount ${isG?'green':'red'}">${isG?'+':'-'}${fmt(it.valor)}</span></div>`;}).join('');
+  el.innerHTML=all.map(it=>{
+    const isG=it.tipo==='g', isInv=it.tipo==='inv';
+    const cor=isG?'green':isInv?'blue':'red';
+    const icon=isG?'📈':isInv?'📊':'📉';
+    const sinal=isG?'+':isInv?'📈':'-';
+    return`<div class="list-item"><div class="list-icon ${cor}">${icon}</div><div class="list-info"><div class="list-title">${it.desc}</div><div class="list-sub"><span class="list-badge ${cor}">${it.cat}</span>${fmtDt(it.data)}</div></div><span class="list-amount ${cor}">${isInv?'':sinal}${fmt(it.valor)}</span></div>`;
+  }).join('');
 }
+
 function renderHistAnual() {
   const ganhos=filterByYear(ud.ganhos,histYear), gastos=filterByYear(ud.gastos,histYear);
-  const tg=sumVal(ganhos),tgs=sumVal(gastos),saldo=tg-tgs;
+  const invs=filterByYear(ud.investimentos||[],histYear);
+  const tg=sumVal(ganhos),tgs=sumVal(gastos),tinv=sumVal(invs),saldo=tg-tgs-tinv;
   document.getElementById('hist-a-summary').innerHTML=`
     <div class="metric-card"><div class="metric-label">Ganhos no Ano</div><div class="metric-val green">${fmt(tg)}</div></div>
     <div class="metric-card"><div class="metric-label">Gastos no Ano</div><div class="metric-val red">${fmt(tgs)}</div></div>
+    <div class="metric-card"><div class="metric-label">Investido no Ano</div><div class="metric-val blue">${fmt(tinv)}</div></div>
     <div class="metric-card"><div class="metric-label">Saldo do Ano</div><div class="metric-val ${saldo>=0?'green':'red'}">${fmt(saldo)}</div></div>
     <div class="metric-card"><div class="metric-label">Melhor Mês</div><div class="metric-val normal" id="hist-best-month">—</div></div>`;
-  const gByM=Array(12).fill(0), gsByM=Array(12).fill(0);
+  const gByM=Array(12).fill(0), gsByM=Array(12).fill(0), invByM=Array(12).fill(0);
   ganhos.forEach(x=>{gByM[new Date(x.data).getMonth()]+=x.valor;});
   gastos.forEach(x=>{gsByM[new Date(x.data).getMonth()]+=x.valor;});
+  invs.forEach(x=>{invByM[new Date(x.data).getMonth()]+=x.valor;});
   let bestIdx=0,bestS=-Infinity;
-  for(let i=0;i<12;i++){const s=gByM[i]-gsByM[i];if(gByM[i]>0&&s>bestS){bestS=s;bestIdx=i;}}
+  for(let i=0;i<12;i++){const s=gByM[i]-gsByM[i]-invByM[i];if(gByM[i]>0&&s>bestS){bestS=s;bestIdx=i;}}
   const bel=document.getElementById('hist-best-month');
   if(bel&&tg>0) bel.textContent=MESES[bestIdx].slice(0,3);
   if(chHistA) chHistA.destroy();
-  chHistA=new Chart(document.getElementById('ch-hist-a'),{type:'bar',data:{labels:MESES.map(m=>m.slice(0,3)),datasets:[{label:'Ganhos',data:gByM,backgroundColor:'rgba(0,196,140,0.7)',borderRadius:4},{label:'Gastos',data:gsByM,backgroundColor:'rgba(255,82,82,0.7)',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,onClick:(_,els)=>{if(els.length)showMonthDetail(els[0].index);},plugins:{legend:{labels:{color:'#8A8F9E',font:{family:'Sora'}}},tooltip:{callbacks:{label:ctx=>' R$ '+ctx.raw.toLocaleString('pt-BR',{minimumFractionDigits:2})}}},scales:{x:{ticks:{color:'#555A6A'},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#555A6A',callback:v=>'R$'+v.toLocaleString('pt-BR')},grid:{color:'rgba(255,255,255,0.04)'}}}}});
+  chHistA=new Chart(document.getElementById('ch-hist-a'),{type:'bar',data:{labels:MESES.map(m=>m.slice(0,3)),datasets:[
+    {label:'Ganhos',data:gByM,backgroundColor:'rgba(0,196,140,0.7)',borderRadius:4},
+    {label:'Gastos',data:gsByM,backgroundColor:'rgba(255,82,82,0.7)',borderRadius:4},
+    {label:'Investido',data:invByM,backgroundColor:'rgba(74,158,255,0.7)',borderRadius:4}
+  ]},options:{responsive:true,maintainAspectRatio:false,onClick:(_,els)=>{if(els.length)showMonthDetail(els[0].index);},plugins:{legend:{labels:{color:'#8A8F9E',font:{family:'Sora'}}},tooltip:{callbacks:{label:ctx=>' R$ '+ctx.raw.toLocaleString('pt-BR',{minimumFractionDigits:2})}}},scales:{x:{ticks:{color:'#555A6A'},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#555A6A',callback:v=>'R$'+v.toLocaleString('pt-BR')},grid:{color:'rgba(255,255,255,0.04)'}}}}});
   document.getElementById('hist-a-detail-title').textContent='Resumo mensal — clique numa barra para ver registros';
   let rows='';
   for(let m=0;m<12;m++){
-    if(gByM[m]===0&&gsByM[m]===0) continue;
-    const s=gByM[m]-gsByM[m];
-    rows+=`<div class="month-row" onclick="showMonthDetail(${m})"><span class="month-row-name">${MESES[m]}</span><div class="month-row-nums"><span class="month-row-num" style="color:var(--green)">+${fmt(gByM[m])}</span><span class="month-row-num" style="color:var(--red)">-${fmt(gsByM[m])}</span><span class="month-badge ${s>=0?'pos':'neg'}">${s>=0?'+':''}${fmt(s)}</span></div></div>`;
+    if(gByM[m]===0&&gsByM[m]===0&&invByM[m]===0) continue;
+    const s=gByM[m]-gsByM[m]-invByM[m];
+    rows+=`<div class="month-row" onclick="showMonthDetail(${m})">
+      <span class="month-row-name">${MESES[m]}</span>
+      <div class="month-row-nums">
+        <span class="month-row-num" style="color:var(--green)">+${fmt(gByM[m])}</span>
+        <span class="month-row-num" style="color:var(--red)">-${fmt(gsByM[m])}</span>
+        <span class="month-row-num" style="color:#4A9EFF">📈${fmt(invByM[m])}</span>
+        <span class="month-badge ${s>=0?'pos':'neg'}">${s>=0?'+':''}${fmt(s)}</span>
+      </div>
+    </div>`;
   }
   document.getElementById('hist-a-detail').innerHTML=rows||'<div class="empty">Nenhum registro neste ano.</div>';
 }
