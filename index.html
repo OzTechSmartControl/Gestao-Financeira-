@@ -1284,10 +1284,9 @@ async function excluirMeta(id) {
 
 function calcularProgressoMeta(meta) {
   if (meta.tipo === 'economia') {
-    // Soma total de ganhos
-    return Math.max(0, totalG());
+    // Saldo real = ganhos - gastos
+    return Math.max(0, totalG() - totalGS());
   } else {
-    // Soma de gastos da categoria da meta (ou todos os gastos se sem categoria)
     const gastosCat = meta.categoria
       ? ud.gastos.filter(g => g.cat === meta.categoria)
       : ud.gastos;
@@ -1398,6 +1397,21 @@ function renderMetas() {
 
     const tempo = calcularTempoMedio(meta, progresso);
 
+    // Calcular valor a guardar por dia para atingir no prazo
+    let porDiaEconomiaHTML = '';
+    if (isEcon && !concluida && meta.prazo) {
+      const diasRestantes = Math.ceil((new Date(meta.prazo) - new Date()) / (1000*60*60*24));
+      if (diasRestantes > 0) {
+        const porDia = faltando / diasRestantes;
+        porDiaEconomiaHTML = `<div class="meta-val-item">Guardar por dia<span style="color:#8B7CF6">${fmt(porDia)}/dia</span></div>`;
+      }
+    } else if (isEcon && !concluida && !meta.prazo && tempo && tempo.meses > 0) {
+      // Sem prazo: baseado na média
+      const mediaMensal = faltando / tempo.meses;
+      const porDia = mediaMensal / 30;
+      porDiaEconomiaHTML = `<div class="meta-val-item">Guardar por dia<span style="color:#8B7CF6">${fmt(porDia)}/dia</span></div>`;
+    }
+
     metasHTML += `
     <div class="meta-card ${concluida ? 'concluida' : ultrapassou ? 'falhou' : ''}">
       <div class="meta-header">
@@ -1411,7 +1425,8 @@ function renderMetas() {
         <div class="meta-val-item">${isEcon ? 'Guardado' : 'Gasto'}<span style="color:${cor}">${fmt(progresso)}</span></div>
         <div class="meta-val-item">${isEcon ? 'Meta' : 'Limite'}<span>${fmt(meta.valor_alvo)}</span></div>
         <div class="meta-val-item">${isEcon ? 'Faltando' : 'Disponível'}<span style="color:${isEcon ? (faltando>0?'var(--red)':'var(--green)') : (ultrapassou?'var(--red)':'var(--green)')}">${ultrapassou ? '⛔ '+fmt(progresso - meta.valor_alvo)+' acima' : faltando > 0 ? fmt(faltando) : (isEcon ? '✅ Concluída!' : '✅ No limite!')}</span></div>
-        ${tempo && isEcon && !concluida ? `<div class="meta-val-item">Tempo estimado<span style="color:#8B7CF6">${tempo.texto}</span></div>` : ''}
+        ${porDiaEconomiaHTML}
+        ${tempo && isEcon && !concluida && !meta.prazo ? `<div class="meta-val-item">Tempo estimado<span style="color:#8B7CF6">${tempo.texto}</span></div>` : ''}
       </div>
       <div class="meta-progress-bar">
         <div class="meta-progress-fill" style="width:${pct}%;background:${cor};"></div>
