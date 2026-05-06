@@ -855,6 +855,7 @@
       <div class="metric-row">
         <div class="metric-card"><div class="metric-label">Total Ganhos</div><div class="metric-val green" id="ov-g">R$ 0,00</div></div>
         <div class="metric-card"><div class="metric-label">Total Gastos</div><div class="metric-val red" id="ov-gs">R$ 0,00</div></div>
+        <div class="metric-card"><div class="metric-label">Total Investido</div><div class="metric-val blue" id="ov-inv">R$ 0,00</div></div>
         <div class="metric-card"><div class="metric-label">Saldo</div><div class="metric-val normal" id="ov-s">R$ 0,00</div></div>
         <div class="metric-card"><div class="metric-label">Transações</div><div class="metric-val normal" id="ov-tx">0</div></div>
       </div>
@@ -871,6 +872,7 @@
       <div class="metric-row">
         <div class="metric-card"><div class="metric-label">Total Ganhos</div><div class="metric-val green" id="dt-g">R$ 0,00</div></div>
         <div class="metric-card"><div class="metric-label">Total Gastos</div><div class="metric-val red" id="dt-gs">R$ 0,00</div></div>
+        <div class="metric-card"><div class="metric-label">Investimentos Aplicados</div><div class="metric-val blue" id="dt-inv">R$ 0,00</div></div>
         <div class="metric-card"><div class="metric-label">Saldo Disponível</div><div class="metric-val normal" id="dt-s">R$ 0,00</div></div>
       </div>
       <div class="dist-blocks" style="grid-template-columns:1fr 1fr;">
@@ -2176,13 +2178,22 @@ function getOvFiltrado() {
 
 function renderCharts() {
   const { ganhos, gastos } = getOvFiltrado();
+  const mes = parseInt(document.getElementById('ov-mes')?.value ?? -1);
+  const ano = parseInt(document.getElementById('ov-ano')?.value ?? new Date().getFullYear());
   const tg  = ganhos.reduce((s,x) => s+x.valor, 0);
   const tgs = gastos.reduce((s,x) => s+x.valor, 0);
-  const sal = tg - tgs;
 
-  document.getElementById('ov-g').textContent  = fmt(tg);
-  document.getElementById('ov-gs').textContent = fmt(tgs);
-  document.getElementById('ov-tx').textContent = ganhos.length + gastos.length;
+  const totalInv = ud.investimentos ? ud.investimentos.filter(x => {
+    const d = new Date(x.data);
+    return mes === -1 ? d.getFullYear() === ano : d.getFullYear() === ano && d.getMonth() === mes;
+  }).reduce((s,x)=>s+x.valor,0) : 0;
+
+  const sal = tg - tgs - totalInv;
+
+  document.getElementById('ov-g').textContent   = fmt(tg);
+  document.getElementById('ov-gs').textContent  = fmt(tgs);
+  document.getElementById('ov-inv').textContent = fmt(totalInv);
+  document.getElementById('ov-tx').textContent  = ganhos.length + gastos.length;
   const el = document.getElementById('ov-s');
   el.textContent = fmt(sal);
   el.className = 'metric-val ' + (sal >= 0 ? 'green' : 'red');
@@ -2273,8 +2284,10 @@ function renderDist() {
   const tg = totalG(), tgs = totalGS();
   const totalInv = ud.investimentos ? ud.investimentos.reduce((s,x)=>s+x.valor,0) : 0;
   const saldo = tg - tgs - totalInv, s = Math.max(0, saldo);
-  document.getElementById('dt-g').textContent  = fmt(tg);
-  document.getElementById('dt-gs').textContent = fmt(tgs);
+  const totalInv = ud.investimentos ? ud.investimentos.reduce((s,x)=>s+x.valor,0) : 0;
+  document.getElementById('dt-g').textContent   = fmt(tg);
+  document.getElementById('dt-gs').textContent  = fmt(tgs);
+  document.getElementById('dt-inv').textContent = fmt(totalInv);
   const salEl = document.getElementById('dt-s');
   salEl.textContent = fmt(saldo);
   salEl.className = 'metric-val ' + (saldo >= 0 ? 'green' : 'red');
