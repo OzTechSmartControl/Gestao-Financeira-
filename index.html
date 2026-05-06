@@ -858,7 +858,6 @@
 // ── CONFIG SUPABASE ────────────────────────────────────
 const SUPA_URL = 'https://bevcgzvqqnubvoivcbva.supabase.co';
 const SUPA_KEY = 'sb_publishable_gBDJMbhgwchvhifQUCiNSw_MS--CGGY';
-const SUPA_SERVICE_KEY = 'sb_secret_fdNAGdaPDmGTIC1mWA0IBw_TgUA8dzh';
 const ADMIN_EMAIL = 'oztechsmartcontrol@gmail.com';
 
 // ── API HELPERS ────────────────────────────────────────
@@ -1215,14 +1214,18 @@ async function excluirUsuario(id, nome) {
     await sbFetch(`gastos?user_id=eq.${id}`,     { method: 'DELETE', prefer: 'return=minimal' });
     await sbFetch(`categorias?user_id=eq.${id}`, { method: 'DELETE', prefer: 'return=minimal' });
     await sbFetch(`perfis?id=eq.${id}`,          { method: 'DELETE', prefer: 'return=minimal' });
-    // Remover do Supabase Auth (requer service key)
-    await fetch(`${SUPA_URL}/auth/v1/admin/users/${id}`, {
-      method: 'DELETE',
+    // Remover do Auth via Edge Function (chave secreta fica segura no servidor)
+    const res = await fetch(`${SUPA_URL}/functions/v1/delete-user`, {
+      method: 'POST',
       headers: {
-        'apikey': SUPA_SERVICE_KEY,
-        'Authorization': 'Bearer ' + SUPA_SERVICE_KEY
-      }
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + authToken,
+        'apikey': SUPA_KEY
+      },
+      body: JSON.stringify({ user_id: id, requesting_email: currentUser.email })
     });
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.error || 'Erro ao excluir do Auth');
     carregarAdminData();
   } catch(e) { alert('Erro ao excluir: ' + e.message); }
   setLoading(false);
