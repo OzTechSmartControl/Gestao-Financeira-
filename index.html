@@ -1925,6 +1925,7 @@ async function carregarAdminData() {
             <td style="display:flex;gap:6px;flex-wrap:wrap;">
               ${p.email !== 'oztechsmartcontrol@gmail.com' ? `
                 <button class="btn-sm ${p.ativo ? 'red' : 'green'}" onclick="toggleUsuario('${p.id}', ${p.ativo})">${p.ativo ? '🔒 Desativar' : '🔓 Ativar'}</button>
+                ${p.acesso_doado ? `<button class="btn-sm red" onclick="revogarAcessoDoado('${p.id}', '${p.nome}')">❌ Revogar doação</button>` : ''}
                 <button class="btn-sm red" onclick="excluirUsuario('${p.id}', '${p.nome}')">🗑 Excluir</button>
               ` : '<span style="font-size:12px;color:var(--text3)">Admin</span>'}
             </td>
@@ -1940,6 +1941,19 @@ async function carregarAdminData() {
 async function revogarConvite(id) {
   await sbFetch(`convites?id=eq.${id}`, { method: 'PATCH', prefer: 'return=minimal', body: JSON.stringify({ ativo: false }) });
   carregarAdminData();
+}
+
+async function revogarAcessoDoado(id, nome) {
+  if (!confirm(`Deseja revogar o acesso doado de "${nome}"?\n\nO usuário perderá o acesso imediatamente.`)) return;
+  setLoading(true);
+  try {
+    await sbFetch(`perfis?id=eq.${id}`, {
+      method: 'PATCH', prefer: 'return=minimal',
+      body: JSON.stringify({ acesso_doado: false, doacao_expira_em: null, ativo: false })
+    });
+    carregarAdminData();
+  } catch(e) { alert('Erro: ' + e.message); }
+  setLoading(false);
 }
 
 async function toggleUsuario(id, ativoAtual) {
