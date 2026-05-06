@@ -1132,27 +1132,70 @@ async function carregarAdminData() {
         </tr>`).join('') + '</tbody></table>';
     }
 
-    // Usuários via perfis
-    const perfis = await sbFetch('perfis?order=criado_em.desc');
+    // Usuários — buscar direto da tabela perfis sem RLS complexo
     const lu = document.getElementById('lista-usuarios');
-    if (!perfis.length) { lu.innerHTML = '<div class="empty">Nenhum usuário cadastrado ainda.</div>'; }
-    else {
+    lu.innerHTML = '<div class="empty">Carregando usuários...</div>';
+    
+    const perfis = await sbFetch('perfis?select=*&order=criado_em.desc', {
+      headers: { 'Cache-Control': 'no-cache' }
+    });
+    
+    if (!perfis.length) { 
+      lu.innerHTML = '<div class="empty">Nenhum usuário cadastrado ainda.</div>'; 
+    } else {
       lu.innerHTML = `<table class="admin-table">
-        <thead><tr><th>Nome</th><th>E-mail</th><th>Status</th><th>Desde</th></tr></thead>
+        <thead><tr><th>Nome</th><th>E-mail</th><th>Status</th><th>Desde</th><th>Ações</th></tr></thead>
         <tbody>` + perfis.map(p => `
         <tr>
-          <td>${p.nome}</td>
+          <td>${p.nome || '—'}</td>
           <td style="color:var(--text2)">${p.email}</td>
           <td><span class="status-pill ${p.ativo ? 'active' : 'inactive'}">${p.ativo ? 'Ativo' : 'Inativo'}</span></td>
           <td style="color:var(--text2)">${new Date(p.criado_em).toLocaleDateString('pt-BR')}</td>
+          <td style="display:flex;gap:6px;flex-wrap:wrap;">
+            ${p.email !== 'oztechsmartcontrol@gmail.com' ? `
+              <button class="btn-sm ${p.ativo ? 'red' : 'green'}" onclick="toggleUsuario('${p.id}', ${p.ativo})">${p.ativo ? '🔒 Desativar' : '🔓 Ativar'}</button>
+              <button class="btn-sm red" onclick="excluirUsuario('${p.id}', '${p.nome}')">🗑 Excluir</button>
+            ` : '<span style="font-size:12px;color:var(--text3)">Admin</span>'}
+          </td>
         </tr>`).join('') + '</tbody></table>';
     }
-  } catch(e) { console.error('Erro admin:', e); }
+  } catch(e) { 
+    console.error('Erro admin:', e);
+    document.getElementById('lista-usuarios').innerHTML = '<div class="empty" style="color:var(--red)">Erro ao carregar: ' + e.message + '</div>';
+  }
 }
 
 async function revogarConvite(id) {
   await sbFetch(`convites?id=eq.${id}`, { method: 'PATCH', prefer: 'return=minimal', body: JSON.stringify({ ativo: false }) });
   carregarAdminData();
+}
+
+async function toggleUsuario(id, ativoAtual) {
+  const acao = ativoAtual ? 'desativar' : 'ativar';
+  if (!confirm(`Deseja ${acao} este usuário?`)) return;
+  setLoading(true);
+  try {
+    await sbFetch(`perfis?id=eq.${id}`, {
+      method: 'PATCH', prefer: 'return=minimal',
+      body: JSON.stringify({ ativo: !ativoAtual })
+    });
+    carregarAdminData();
+  } catch(e) { alert('Erro: ' + e.message); }
+  setLoading(false);
+}
+
+async function excluirUsuario(id, nome) {
+  if (!confirm(`Tem certeza que deseja EXCLUIR o usuário "${nome}"?\n\nEsta ação não pode ser desfeita e removerá todos os dados do usuário.`)) return;
+  setLoading(true);
+  try {
+    // Remover dados do usuário
+    await sbFetch(`ganhos?user_id=eq.${id}`,     { method: 'DELETE', prefer: 'return=minimal' });
+    await sbFetch(`gastos?user_id=eq.${id}`,     { method: 'DELETE', prefer: 'return=minimal' });
+    await sbFetch(`categorias?user_id=eq.${id}`, { method: 'DELETE', prefer: 'return=minimal' });
+    await sbFetch(`perfis?id=eq.${id}`,          { method: 'DELETE', prefer: 'return=minimal' });
+    carregarAdminData();
+  } catch(e) { alert('Erro ao excluir: ' + e.message); }
+  setLoading(false);
 }
 
 // ── NAVEGAÇÃO APP ──────────────────────────────────────
