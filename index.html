@@ -918,7 +918,7 @@ function setLoading(on) {
 }
 
 // ── LOGIN ──────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('inp-pass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
   document.getElementById('new-pass2').addEventListener('keydown', e => { if(e.key==='Enter') saveNewPass(); });
   // Verificar sessão salva
@@ -929,6 +929,13 @@ document.addEventListener('DOMContentLoaded', () => {
       if (s.token && s.user && s.expires > Date.now()) {
         authToken = s.token;
         currentUser = s.user;
+        // Verificar se ainda está ativo
+        const perfil = await sbFetch(`perfis?id=eq.${currentUser.id}&select=ativo`);
+        if (perfil.length && perfil[0].ativo === false) {
+          localStorage.removeItem('oztech_session');
+          authToken = null; currentUser = null;
+          return;
+        }
         isAdmin = s.user.email === ADMIN_EMAIL;
         enterApp();
         return;
@@ -953,6 +960,20 @@ async function doLogin() {
   document.getElementById('login-error').style.display = 'none';
   authToken = data.access_token;
   currentUser = data.user;
+
+  // Verificar se usuário está ativo
+  try {
+    const perfil = await sbFetch(`perfis?id=eq.${currentUser.id}&select=ativo`);
+    if (perfil.length && perfil[0].ativo === false) {
+      authToken = null; currentUser = null;
+      const el = document.getElementById('login-error');
+      el.textContent = 'Sua conta foi desativada. Entre em contato com o administrador.';
+      el.style.display = 'block';
+      setLoading(false);
+      return;
+    }
+  } catch(e) { console.error('Erro ao verificar perfil:', e); }
+
   isAdmin = currentUser.email === ADMIN_EMAIL;
   // Salvar sessão por 8h
   localStorage.setItem('oztech_session', JSON.stringify({
