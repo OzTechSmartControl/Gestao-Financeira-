@@ -773,6 +773,7 @@
     <button class="nav-item red"           onclick="showPage('gastos',this)"><span class="nav-dot"></span> Gastos</button>
     <button class="nav-item blue"          onclick="showPage('overview',this)"><span class="nav-dot"></span> Visão Geral</button>
     <button class="nav-item purple"        onclick="showPage('distribuicao',this)"><span class="nav-dot"></span> Distribuição</button>
+    <button class="nav-item"               onclick="showPage('investimentos',this)"><span class="nav-dot" style="background:#4A9EFF"></span> 📈 Investimentos</button>
     <button class="nav-item orange"        onclick="showPage('historico',this)"><span class="nav-dot"></span> Histórico</button>
     <button class="nav-item"               onclick="showPage('metas',this)"><span class="nav-dot" style="background:#8B7CF6"></span> 🎯 Metas</button>
     <button class="nav-item" id="nav-planos" onclick="showPage('planos',this)" style="display:none;"><span class="nav-dot" style="background:#00C48C"></span> 💳 Planos</button>
@@ -872,10 +873,9 @@
         <div class="metric-card"><div class="metric-label">Total Gastos</div><div class="metric-val red" id="dt-gs">R$ 0,00</div></div>
         <div class="metric-card"><div class="metric-label">Saldo Disponível</div><div class="metric-val normal" id="dt-s">R$ 0,00</div></div>
       </div>
-      <div class="dist-blocks">
+      <div class="dist-blocks" style="grid-template-columns:1fr 1fr;">
         <div class="dist-block"><div class="dist-block-label green">Guardar</div><div class="dist-block-pct" id="pct-guard-label">50% do saldo</div><div class="dist-block-val green" id="db-guard">R$ 0,00</div><div class="prog-bar"><div class="prog-fill" id="pb-guard" style="background:var(--green);width:0%"></div></div></div>
-        <div class="dist-block"><div class="dist-block-label blue">Investir</div><div class="dist-block-pct" id="pct-inv-label">25% do saldo</div><div class="dist-block-val blue" id="db-inv">R$ 0,00</div><div class="prog-bar"><div class="prog-fill" id="pb-inv" style="background:var(--blue);width:0%"></div></div></div>
-        <div class="dist-block"><div class="dist-block-label red">Gastar</div><div class="dist-block-pct" id="pct-gast-label">25% do saldo</div><div class="dist-block-val red" id="db-gast">R$ 0,00</div><div class="prog-bar"><div class="prog-fill" id="pb-gast" style="background:var(--red);width:0%"></div></div></div>
+        <div class="dist-block"><div class="dist-block-label red">Gastar</div><div class="dist-block-pct" id="pct-gast-label">50% do saldo</div><div class="dist-block-val red" id="db-gast">R$ 0,00</div><div class="prog-bar"><div class="prog-fill" id="pb-gast" style="background:var(--red);width:0%"></div></div></div>
       </div>
 
       <!-- Perfis e personalização -->
@@ -885,38 +885,34 @@
           <div class="perfil-btn" onclick="aplicarPerfil('equilibrado')" id="perfil-equilibrado">
             <div class="perfil-icon">⚖️</div>
             <div class="perfil-nome">Equilibrado</div>
-            <div class="perfil-pcts">50 · 25 · 25</div>
+            <div class="perfil-pcts">50 · 50</div>
           </div>
           <div class="perfil-btn" onclick="aplicarPerfil('conservador')" id="perfil-conservador">
             <div class="perfil-icon">🛡️</div>
             <div class="perfil-nome">Conservador</div>
-            <div class="perfil-pcts">60 · 30 · 10</div>
+            <div class="perfil-pcts">70 · 30</div>
           </div>
           <div class="perfil-btn" onclick="aplicarPerfil('investidor')" id="perfil-investidor">
             <div class="perfil-icon">📈</div>
             <div class="perfil-nome">Investidor</div>
-            <div class="perfil-pcts">20 · 60 · 20</div>
+            <div class="perfil-pcts">60 · 40</div>
           </div>
           <div class="perfil-btn" onclick="aplicarPerfil('confortavel')" id="perfil-confortavel">
             <div class="perfil-icon">😊</div>
             <div class="perfil-nome">Confortável</div>
-            <div class="perfil-pcts">30 · 20 · 50</div>
+            <div class="perfil-pcts">30 · 70</div>
           </div>
         </div>
 
         <div class="card-title" style="margin-bottom:12px;">Personalizar distribuição <span style="font-size:11px;color:var(--text3);font-weight:400;">— total deve ser 100%</span></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
           <div>
             <label class="f-label" style="color:var(--green);">💚 Guardar (%)</label>
             <input class="f-input" type="number" id="inp-dist-guard" min="0" max="100" step="1" value="50" oninput="atualizarDistTotal()">
           </div>
           <div>
-            <label class="f-label" style="color:var(--blue);">🔵 Investir (%)</label>
-            <input class="f-input" type="number" id="inp-dist-inv" min="0" max="100" step="1" value="25" oninput="atualizarDistTotal()">
-          </div>
-          <div>
             <label class="f-label" style="color:var(--red);">🔴 Gastar (%)</label>
-            <input class="f-input" type="number" id="inp-dist-gast" min="0" max="100" step="1" value="25" oninput="atualizarDistTotal()">
+            <input class="f-input" type="number" id="inp-dist-gast" min="0" max="100" step="1" value="50" oninput="atualizarDistTotal()">
           </div>
         </div>
         <div id="dist-total-msg" style="font-size:13px;margin-bottom:14px;color:var(--green);">✅ Total: 100%</div>
@@ -934,6 +930,75 @@
       <div class="card" style="margin-top:1rem;" id="dist-metas-card">
         <div class="card-title">🎯 Metas vinculadas</div>
         <div id="dist-metas-lista"><div class="empty">Nenhuma meta ativa.</div></div>
+      </div>
+    </div>
+
+    <!-- INVESTIMENTOS -->
+    <div class="page" id="page-investimentos">
+      <div class="page-header">
+        <div><div class="page-title">📈 Investimentos</div><div class="page-sub">Registre seus aportes e acompanhe sua carteira</div></div>
+      </div>
+
+      <!-- Cards de resumo -->
+      <div class="metric-row">
+        <div class="metric-card"><div class="metric-label">Total Investido</div><div class="metric-val blue" id="inv-total">R$ 0,00</div></div>
+        <div class="metric-card"><div class="metric-label">Investido este mês</div><div class="metric-val blue" id="inv-mes">R$ 0,00</div></div>
+        <div class="metric-card"><div class="metric-label">Aportes realizados</div><div class="metric-val normal" id="inv-qtd">0</div></div>
+        <div class="metric-card"><div class="metric-label">Saldo disponível</div><div class="metric-val green" id="inv-saldo">R$ 0,00</div></div>
+      </div>
+
+      <!-- Formulário -->
+      <div class="card">
+        <div class="card-title">Registrar aporte</div>
+        <div class="form-grid">
+          <div><label class="f-label">Valor (R$)</label><input class="f-input" type="number" id="inv-val" placeholder="0,00" min="0" step="0.01"></div>
+          <div><label class="f-label">Data</label><input class="f-input" type="datetime-local" id="inv-dt"></div>
+        </div>
+        <div class="form-grid" style="margin-bottom:14px;">
+          <div>
+            <label class="f-label">Categoria</label>
+            <select class="f-input" id="inv-cat">
+              <option value="Renda Fixa">💰 Renda Fixa (CDB, Tesouro, LCI...)</option>
+              <option value="Ações">📈 Ações</option>
+              <option value="FIIs">🏢 FIIs (Fundos Imobiliários)</option>
+              <option value="Cripto">🌐 Cripto</option>
+              <option value="Outros">📦 Outros</option>
+            </select>
+          </div>
+          <div><label class="f-label">Descrição (opcional)</label><input class="f-input" type="text" id="inv-desc" placeholder="Ex: Tesouro Selic 2029..."></div>
+        </div>
+        <button class="btn-submit blue" onclick="salvarInvestimento()">Registrar Aporte</button>
+      </div>
+
+      <!-- Dashboards -->
+      <div class="charts-row">
+        <div class="card">
+          <div class="card-title">Distribuição por tipo</div>
+          <div class="legend" id="inv-leg-dist"></div>
+          <div class="chart-wrap"><canvas id="inv-ch-dist"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Evolução mensal</div>
+          <div class="chart-wrap hist-bar-chart"><canvas id="inv-ch-evolucao"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Histórico de aportes -->
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:8px;">
+          <div class="card-title" style="margin:0;">Histórico de aportes</div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <select class="f-input" id="inv-filtro-cat" onchange="renderInvestimentos()" style="width:160px;padding:6px 10px;font-size:13px;">
+              <option value="">Todas as categorias</option>
+              <option value="Renda Fixa">💰 Renda Fixa</option>
+              <option value="Ações">📈 Ações</option>
+              <option value="FIIs">🏢 FIIs</option>
+              <option value="Cripto">🌐 Cripto</option>
+              <option value="Outros">📦 Outros</option>
+            </select>
+          </div>
+        </div>
+        <div id="inv-lista"><div class="empty">Nenhum aporte registrado ainda.</div></div>
       </div>
     </div>
 
@@ -1126,7 +1191,7 @@ let ud = defaultData();
 
 function defaultData() {
   return {
-    ganhos: [], gastos: [],
+    ganhos: [], gastos: [], investimentos: [],
     catG:  ['Salário','Freelance','Outros'],
     catGS: ['Moradia','Alimentação','Transporte','Lazer','Outros']
   };
@@ -1316,6 +1381,105 @@ function showMsg(id, type, text) {
   el.className = 'login-msg' + (type ? ' '+type : '');
   el.textContent = text;
   el.style.display = text ? 'block' : 'none';
+}
+
+async function salvarInvestimento() {
+  const val  = parseFloat(document.getElementById('inv-val').value);
+  const cat  = document.getElementById('inv-cat').value;
+  const desc = document.getElementById('inv-desc').value.trim();
+  const dt   = document.getElementById('inv-dt').value;
+  if (!val || val <= 0) { alert('Informe o valor do aporte.'); return; }
+  setLoading(true);
+  try {
+    const rows = await sbFetch('investimentos', { method:'POST', body: JSON.stringify({
+      user_id: currentUser.id, valor: val, categoria: cat,
+      descricao: desc || cat,
+      data: dt ? new Date(dt).toISOString() : new Date().toISOString()
+    })});
+    const r = rows[0];
+    ud.investimentos.unshift({ id:r.id, valor:parseFloat(r.valor), data:r.data?r.data.slice(0,16):'', desc:r.descricao||'', cat:r.categoria });
+    document.getElementById('inv-val').value  = '';
+    document.getElementById('inv-desc').value = '';
+    setNow();
+    renderInvestimentos();
+  } catch(e) { alert('Erro: ' + e.message); }
+  setLoading(false);
+}
+
+async function deletarInvestimento(id) {
+  setLoading(true);
+  try {
+    await sbFetch(`investimentos?id=eq.${id}&user_id=eq.${currentUser.id}`, { method:'DELETE', prefer:'return=minimal' });
+    ud.investimentos = ud.investimentos.filter(x => x.id !== id);
+    renderInvestimentos();
+  } catch(e) { alert('Erro: ' + e.message); }
+  setLoading(false);
+}
+
+const INV_CORES = { 'Renda Fixa':'#00C48C', 'Ações':'#4A9EFF', 'FIIs':'#FFB830', 'Cripto':'#8B7CF6', 'Outros':'#A0A5B5' };
+const INV_ICONS = { 'Renda Fixa':'💰', 'Ações':'📈', 'FIIs':'🏢', 'Cripto':'🌐', 'Outros':'📦' };
+
+function renderInvestimentos() {
+  if (!ud.investimentos) ud.investimentos = [];
+  const invs = ud.investimentos;
+  const hoje = new Date();
+  const mesAtual = hoje.getMonth(), anoAtual = getFullYear ? hoje.getFullYear() : hoje.getFullYear();
+
+  // Métricas
+  const total    = invs.reduce((s,x) => s+x.valor, 0);
+  const doMes    = invs.filter(x => { const d=new Date(x.data); return d.getFullYear()===hoje.getFullYear()&&d.getMonth()===hoje.getMonth(); }).reduce((s,x)=>s+x.valor,0);
+  const saldoDisp = Math.max(0, totalG() - totalGS() - total);
+
+  document.getElementById('inv-total').textContent = fmt(total);
+  document.getElementById('inv-mes').textContent   = fmt(doMes);
+  document.getElementById('inv-qtd').textContent   = invs.length;
+  document.getElementById('inv-saldo').textContent = fmt(saldoDisp);
+
+  // Gráfico distribuição por tipo
+  const porCat = {};
+  invs.forEach(x => { porCat[x.cat] = (porCat[x.cat]||0) + x.valor; });
+  const catLabels = Object.keys(porCat), catVals = Object.values(porCat);
+  const catCores = catLabels.map(c => INV_CORES[c] || '#A0A5B5');
+  document.getElementById('inv-leg-dist').innerHTML = catLabels.map((l,i) =>
+    `<div class="leg-item"><span class="leg-dot" style="background:${catCores[i]}"></span>${INV_ICONS[l]||'📦'} ${l}: ${fmt(catVals[i])} (${Math.round(catVals[i]/total*100)||0}%)</div>`
+  ).join('');
+  if (chInvDist) chInvDist.destroy();
+  chInvDist = new Chart(document.getElementById('inv-ch-dist'), {
+    type:'doughnut',
+    data: catLabels.length ? {labels:catLabels,datasets:[{data:catVals,backgroundColor:catCores}]} : noData,
+    options: donutOpts
+  });
+
+  // Gráfico evolução mensal (últimos 12 meses)
+  const mesesLabels = [], mesesVals = [];
+  for (let i=11; i>=0; i--) {
+    const d = new Date(hoje.getFullYear(), hoje.getMonth()-i, 1);
+    const label = MESES[d.getMonth()].slice(0,3)+'/'+String(d.getFullYear()).slice(2);
+    const val = invs.filter(x => { const xd=new Date(x.data); return xd.getFullYear()===d.getFullYear()&&xd.getMonth()===d.getMonth(); }).reduce((s,x)=>s+x.valor,0);
+    mesesLabels.push(label); mesesVals.push(val);
+  }
+  if (chInvEv) chInvEv.destroy();
+  chInvEv = new Chart(document.getElementById('inv-ch-evolucao'), {
+    type:'bar',
+    data: { labels:mesesLabels, datasets:[{ label:'Investido', data:mesesVals, backgroundColor:'rgba(74,158,255,0.7)', borderRadius:4 }] },
+    options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{color:'#8A8F9E'}}}, scales:{x:{ticks:{color:'#555A6A'},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#555A6A',callback:v=>'R$'+v.toLocaleString('pt-BR')},grid:{color:'rgba(255,255,255,0.04)'}}}}
+  });
+
+  // Lista filtrada
+  const filtCat = document.getElementById('inv-filtro-cat')?.value || '';
+  const lista = filtCat ? invs.filter(x=>x.cat===filtCat) : invs;
+  const el = document.getElementById('inv-lista');
+  if (!lista.length) { el.innerHTML='<div class="empty">Nenhum aporte encontrado.</div>'; return; }
+  el.innerHTML = lista.map(x => `
+    <div class="list-item">
+      <div class="list-icon blue">${INV_ICONS[x.cat]||'📦'}</div>
+      <div class="list-info">
+        <div class="list-title">${x.desc||x.cat}</div>
+        <div class="list-sub"><span class="list-badge blue">${x.cat}</span>${fmtDt(x.data)}</div>
+      </div>
+      <span class="list-amount blue">+${fmt(x.valor)}</span>
+      <button class="del-btn" onclick="deletarInvestimento(${x.id})">×</button>
+    </div>`).join('');
 }
 
 // ── METAS ──────────────────────────────────────────────
@@ -1824,6 +1988,7 @@ function showPage(name, btn) {
   btn.classList.add('active');
   if (name === 'overview')     { initOvFiltro(); renderCharts(); }
   if (name === 'distribuicao') renderDist();
+  if (name === 'investimentos') renderInvestimentos();
   if (name === 'historico')    { histYear = new Date().getFullYear(); histMonth = new Date().getMonth(); setHistMode('mensal'); }
   if (name === 'admin')        carregarAdminData();
   if (name === 'planos')       renderPlanoAtual();
@@ -1843,23 +2008,29 @@ function setNow() {
   const s = n.toISOString().slice(0,16);
   document.getElementById('g-dt').value  = s;
   document.getElementById('gs-dt').value = s;
+  const invDt = document.getElementById('inv-dt');
+  if (invDt) invDt.value = s;
 }
 function totalG()  { return ud.ganhos.reduce((s,x) => s+x.valor, 0); }
 function totalGS() { return ud.gastos.reduce((s,x) => s+x.valor, 0); }
 
-// ── CARREGAR DADOS ─────────────────────────────────────
+// ── INVESTIMENTOS ──────────────────────────────────────
+let chInvDist = null, chInvEv = null;
+
 async function loadData() {
   ud = defaultData();
   setLoading(true);
   try {
     const uid = currentUser.id;
-    const [ganhos, gastos, cats] = await Promise.all([
+    const [ganhos, gastos, cats, invs] = await Promise.all([
       sbFetch(`ganhos?user_id=eq.${uid}&order=data.desc`),
       sbFetch(`gastos?user_id=eq.${uid}&order=data.desc`),
-      sbFetch(`categorias?user_id=eq.${uid}`)
+      sbFetch(`categorias?user_id=eq.${uid}`),
+      sbFetch(`investimentos?user_id=eq.${uid}&order=data.desc`)
     ]);
     ud.ganhos = ganhos.map(r => ({ id:r.id, valor:parseFloat(r.valor), data:r.data?r.data.slice(0,16):'', desc:r.descricao, cat:r.categoria }));
     ud.gastos = gastos.map(r => ({ id:r.id, valor:parseFloat(r.valor), data:r.data?r.data.slice(0,16):'', desc:r.descricao, cat:r.categoria }));
+    ud.investimentos = invs.map(r => ({ id:r.id, valor:parseFloat(r.valor), data:r.data?r.data.slice(0,16):'', desc:r.descricao||'', cat:r.categoria }));
     const cG  = cats.filter(c=>c.tipo==='g').map(c=>c.nome);
     const cGS = cats.filter(c=>c.tipo==='gs').map(c=>c.nome);
     if (cG.length)  ud.catG  = cG;
@@ -2032,20 +2203,18 @@ function renderCharts() {
 let distGuardar = 50, distInvestir = 25, distGastar = 25;
 
 const PERFIS = {
-  equilibrado: { guardar: 50, investir: 25, gastar: 25 },
-  conservador: { guardar: 60, investir: 30, gastar: 10 },
-  investidor:  { guardar: 20, investir: 60, gastar: 20 },
-  confortavel: { guardar: 30, investir: 20, gastar: 50 }
+  equilibrado: { guardar: 50, gastar: 50 },
+  conservador: { guardar: 70, gastar: 30 },
+  investidor:  { guardar: 60, gastar: 40 },
+  confortavel: { guardar: 30, gastar: 70 }
 };
 
 function carregarDistribuicao() {
   if (currentPerfil) {
     distGuardar = parseFloat(currentPerfil.dist_guardar) || 50;
-    distInvestir = parseFloat(currentPerfil.dist_investir) || 25;
-    distGastar  = parseFloat(currentPerfil.dist_gastar) || 25;
+    distGastar  = parseFloat(currentPerfil.dist_gastar)  || 50;
   }
   document.getElementById('inp-dist-guard').value = distGuardar;
-  document.getElementById('inp-dist-inv').value   = distInvestir;
   document.getElementById('inp-dist-gast').value  = distGastar;
   atualizarDistTotal();
   destacarPerfilAtivo();
@@ -2055,16 +2224,15 @@ function destacarPerfilAtivo() {
   Object.keys(PERFIS).forEach(p => {
     const el = document.getElementById('perfil-'+p);
     if (!el) return;
-    const match = PERFIS[p].guardar === distGuardar && PERFIS[p].investir === distInvestir && PERFIS[p].gastar === distGastar;
+    const match = PERFIS[p].guardar === distGuardar && PERFIS[p].gastar === distGastar;
     el.classList.toggle('ativo', match);
   });
 }
 
 function aplicarPerfil(nome) {
   const p = PERFIS[nome];
-  distGuardar = p.guardar; distInvestir = p.investir; distGastar = p.gastar;
+  distGuardar = p.guardar; distGastar = p.gastar;
   document.getElementById('inp-dist-guard').value = distGuardar;
-  document.getElementById('inp-dist-inv').value   = distInvestir;
   document.getElementById('inp-dist-gast').value  = distGastar;
   atualizarDistTotal();
   destacarPerfilAtivo();
@@ -2073,39 +2241,39 @@ function aplicarPerfil(nome) {
 
 function atualizarDistTotal() {
   const g  = parseFloat(document.getElementById('inp-dist-guard').value) || 0;
-  const i  = parseFloat(document.getElementById('inp-dist-inv').value)   || 0;
   const gs = parseFloat(document.getElementById('inp-dist-gast').value)  || 0;
-  const total = g + i + gs;
+  const total = g + gs;
   const el = document.getElementById('dist-total-msg');
   if (total === 100) {
     el.style.color = 'var(--green)'; el.textContent = '✅ Total: 100%';
   } else {
     el.style.color = 'var(--red)'; el.textContent = `❌ Total: ${total}% (deve ser 100%)`;
   }
-  distGuardar = g; distInvestir = i; distGastar = gs;
+  distGuardar = g; distGastar = gs;
   destacarPerfilAtivo();
   renderDist();
 }
 
 async function salvarDistribuicao() {
   const g  = parseFloat(document.getElementById('inp-dist-guard').value) || 0;
-  const i  = parseFloat(document.getElementById('inp-dist-inv').value)   || 0;
   const gs = parseFloat(document.getElementById('inp-dist-gast').value)  || 0;
-  if (g + i + gs !== 100) { alert('A soma dos percentuais deve ser 100%.'); return; }
+  if (g + gs !== 100) { alert('A soma dos percentuais deve ser 100%.'); return; }
   setLoading(true);
   try {
     await sbFetch(`perfis?id=eq.${currentUser.id}`, {
       method: 'PATCH', prefer: 'return=minimal',
-      body: JSON.stringify({ dist_guardar: g, dist_investir: i, dist_gastar: gs })
+      body: JSON.stringify({ dist_guardar: g, dist_gastar: gs })
     });
-    if (currentPerfil) { currentPerfil.dist_guardar = g; currentPerfil.dist_investir = i; currentPerfil.dist_gastar = gs; }
+    if (currentPerfil) { currentPerfil.dist_guardar = g; currentPerfil.dist_gastar = gs; }
     alert('✅ Distribuição salva com sucesso!');
   } catch(e) { alert('Erro: ' + e.message); }
   setLoading(false);
 }
 
 function renderDist() {
-  const tg = totalG(), tgs = totalGS(), saldo = tg - tgs, s = Math.max(0, saldo);
+  const tg = totalG(), tgs = totalGS();
+  const totalInv = ud.investimentos ? ud.investimentos.reduce((s,x)=>s+x.valor,0) : 0;
+  const saldo = tg - tgs - totalInv, s = Math.max(0, saldo);
   document.getElementById('dt-g').textContent  = fmt(tg);
   document.getElementById('dt-gs').textContent = fmt(tgs);
   const salEl = document.getElementById('dt-s');
@@ -2113,32 +2281,27 @@ function renderDist() {
   salEl.className = 'metric-val ' + (saldo >= 0 ? 'green' : 'red');
   const info = document.getElementById('dist-info');
   if (saldo < 0) { info.className='dist-info red'; info.textContent='Saldo negativo: os gastos superam os ganhos.'; }
-  else { info.className='dist-info purple'; info.textContent=`Distribuição calculada sobre o saldo disponível: ${fmt(s)} (ganhos − gastos).`; }
+  else { info.className='dist-info purple'; info.textContent=`Saldo disponível: ${fmt(s)} (ganhos − gastos − investimentos).`; }
 
-  const pG  = distGuardar/100, pI = distInvestir/100, pGs = distGastar/100;
-  const mG  = s * pG, mI = s * pI, mGs = s * pGs;
+  const pG = distGuardar/100, pGs = distGastar/100;
+  const mG = s * pG, mGs = s * pGs;
 
   document.getElementById('db-guard').textContent = fmt(mG);
-  document.getElementById('db-inv').textContent   = fmt(mI);
   document.getElementById('db-gast').textContent  = fmt(mGs);
   document.getElementById('pct-guard-label').textContent = `${distGuardar}% do saldo`;
-  document.getElementById('pct-inv-label').textContent   = `${distInvestir}% do saldo`;
   document.getElementById('pct-gast-label').textContent  = `${distGastar}% do saldo`;
   document.getElementById('pb-guard').style.width = s>0?'100%':'0%';
-  document.getElementById('pb-inv').style.width   = s>0?'100%':'0%';
   document.getElementById('pb-gast').style.width  = s>0?'100%':'0%';
   document.getElementById('leg-dist').innerHTML =
     `<div class="leg-item"><span class="leg-dot" style="background:#00C48C"></span>Guardar ${distGuardar}%: ${fmt(mG)}</div>` +
-    `<div class="leg-item"><span class="leg-dot" style="background:#4A9EFF"></span>Investir ${distInvestir}%: ${fmt(mI)}</div>` +
     `<div class="leg-item"><span class="leg-dot" style="background:#FF5252"></span>Gastar ${distGastar}%: ${fmt(mGs)}</div>`;
   if (chD) chD.destroy();
   chD = new Chart(document.getElementById('ch-dist'), {
     type:'doughnut',
-    data: s>0 ? {labels:[`Guardar ${distGuardar}%`,`Investir ${distInvestir}%`,`Gastar ${distGastar}%`],datasets:[{data:[mG,mI,mGs],backgroundColor:['#00C48C','#4A9EFF','#FF5252']}]} : noData,
+    data: s>0 ? {labels:[`Guardar ${distGuardar}%`,`Gastar ${distGastar}%`],datasets:[{data:[mG,mGs],backgroundColor:['#00C48C','#FF5252']}]} : noData,
     options: donutOpts
   });
 
-  // Integração com metas
   renderDistMetas(mG, mGs);
 }
 
