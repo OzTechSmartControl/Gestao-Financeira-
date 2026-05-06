@@ -829,11 +829,33 @@
 
     <!-- OVERVIEW -->
     <div class="page" id="page-overview">
-      <div class="page-header"><div class="page-title">Visão Geral</div><div class="page-sub">Resumo financeiro e distribuição por categoria</div></div>
+      <div class="page-header">
+        <div>
+          <div class="page-title">Visão Geral</div>
+          <div class="page-sub">Resumo financeiro e distribuição por categoria</div>
+        </div>
+        <!-- Filtro de período -->
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <button class="btn-sm blue" onclick="ovNav(-1)" style="padding:7px 12px;">&#8249;</button>
+          <select class="f-input" id="ov-mes" onchange="renderCharts()" style="width:130px;padding:7px 10px;">
+            <option value="-1">Todos os meses</option>
+            <option value="0">Janeiro</option><option value="1">Fevereiro</option>
+            <option value="2">Março</option><option value="3">Abril</option>
+            <option value="4">Maio</option><option value="5">Junho</option>
+            <option value="6">Julho</option><option value="7">Agosto</option>
+            <option value="8">Setembro</option><option value="9">Outubro</option>
+            <option value="10">Novembro</option><option value="11">Dezembro</option>
+          </select>
+          <select class="f-input" id="ov-ano" onchange="renderCharts()" style="width:100px;padding:7px 10px;"></select>
+          <button class="btn-sm blue" onclick="ovNav(1)" style="padding:7px 12px;">&#8250;</button>
+          <button class="btn-sm" onclick="ovResetFiltro()" style="padding:7px 12px;background:rgba(255,255,255,0.05);color:var(--text2);">Tudo</button>
+        </div>
+      </div>
       <div class="metric-row">
         <div class="metric-card"><div class="metric-label">Total Ganhos</div><div class="metric-val green" id="ov-g">R$ 0,00</div></div>
         <div class="metric-card"><div class="metric-label">Total Gastos</div><div class="metric-val red" id="ov-gs">R$ 0,00</div></div>
         <div class="metric-card"><div class="metric-label">Saldo</div><div class="metric-val normal" id="ov-s">R$ 0,00</div></div>
+        <div class="metric-card"><div class="metric-label">Transações</div><div class="metric-val normal" id="ov-tx">0</div></div>
       </div>
       <div class="charts-row">
         <div class="card"><div class="card-title">Ganhos por Categoria</div><div class="legend" id="leg-g"></div><div class="chart-wrap"><canvas id="ch-g"></canvas></div></div>
@@ -1800,7 +1822,7 @@ function showPage(name, btn) {
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
   btn.classList.add('active');
-  if (name === 'overview')     renderCharts();
+  if (name === 'overview')     { initOvFiltro(); renderCharts(); }
   if (name === 'distribuicao') renderDist();
   if (name === 'historico')    { histYear = new Date().getFullYear(); histMonth = new Date().getMonth(); setHistMode('mensal'); }
   if (name === 'admin')        carregarAdminData();
@@ -1942,9 +1964,60 @@ const COLORS = ['#00C48C','#4A9EFF','#FF5252','#8B7CF6','#FFB830','#FF6B9D','#56
 const noData  = { labels:['Sem dados'], datasets:[{data:[1],backgroundColor:['#2A2D36']}] };
 const donutOpts = { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } } };
 
+function initOvFiltro() {
+  const anos = [...new Set([...ud.ganhos, ...ud.gastos].map(x => new Date(x.data).getFullYear()))].sort((a,b)=>b-a);
+  const anoAtual = new Date().getFullYear();
+  if (!anos.includes(anoAtual)) anos.unshift(anoAtual);
+  const sel = document.getElementById('ov-ano');
+  sel.innerHTML = anos.map(a => `<option value="${a}" ${a===anoAtual?'selected':''}>${a}</option>`).join('');
+  // Setar mês atual
+  document.getElementById('ov-mes').value = new Date().getMonth();
+}
+
+function ovNav(dir) {
+  const mes = parseInt(document.getElementById('ov-mes').value);
+  const ano = parseInt(document.getElementById('ov-ano').value);
+  if (mes === -1) {
+    document.getElementById('ov-ano').value = ano + dir;
+  } else {
+    let novoMes = mes + dir;
+    let novoAno = ano;
+    if (novoMes < 0)  { novoMes = 11; novoAno--; }
+    if (novoMes > 11) { novoMes = 0;  novoAno++; }
+    document.getElementById('ov-mes').value = novoMes;
+    document.getElementById('ov-ano').value = novoAno;
+  }
+  renderCharts();
+}
+
+function ovResetFiltro() {
+  document.getElementById('ov-mes').value = -1;
+  renderCharts();
+}
+
+function getOvFiltrado() {
+  const mes = parseInt(document.getElementById('ov-mes')?.value ?? -1);
+  const ano = parseInt(document.getElementById('ov-ano')?.value ?? new Date().getFullYear());
+  const filtrar = arr => mes === -1
+    ? arr.filter(x => new Date(x.data).getFullYear() === ano)
+    : arr.filter(x => { const d = new Date(x.data); return d.getFullYear() === ano && d.getMonth() === mes; });
+  return { ganhos: filtrar(ud.ganhos), gastos: filtrar(ud.gastos) };
+}
+
 function renderCharts() {
-  renderMetrics();
-  const gGr = groupBy(ud.ganhos,'cat'), gsGr = groupBy(ud.gastos,'cat');
+  const { ganhos, gastos } = getOvFiltrado();
+  const tg  = ganhos.reduce((s,x) => s+x.valor, 0);
+  const tgs = gastos.reduce((s,x) => s+x.valor, 0);
+  const sal = tg - tgs;
+
+  document.getElementById('ov-g').textContent  = fmt(tg);
+  document.getElementById('ov-gs').textContent = fmt(tgs);
+  document.getElementById('ov-tx').textContent = ganhos.length + gastos.length;
+  const el = document.getElementById('ov-s');
+  el.textContent = fmt(sal);
+  el.className = 'metric-val ' + (sal >= 0 ? 'green' : 'red');
+
+  const gGr = groupBy(ganhos,'cat'), gsGr = groupBy(gastos,'cat');
   const gL = Object.keys(gGr), gV = Object.values(gGr);
   const gsL = Object.keys(gsGr), gsV = Object.values(gsGr);
   document.getElementById('leg-g').innerHTML  = gL.map((l,i)  => `<div class="leg-item"><span class="leg-dot" style="background:${COLORS[i%COLORS.length]}"></span>${l}: ${fmt(gV[i])}</div>`).join('');
