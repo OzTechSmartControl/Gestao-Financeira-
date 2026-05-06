@@ -855,13 +855,14 @@
       <div class="metric-row">
         <div class="metric-card"><div class="metric-label">Total Ganhos</div><div class="metric-val green" id="ov-g">R$ 0,00</div></div>
         <div class="metric-card"><div class="metric-label">Total Gastos</div><div class="metric-val red" id="ov-gs">R$ 0,00</div></div>
-        <div class="metric-card"><div class="metric-label">Total Investido</div><div class="metric-val blue" id="ov-inv">R$ 0,00</div></div>
         <div class="metric-card"><div class="metric-label">Saldo</div><div class="metric-val normal" id="ov-s">R$ 0,00</div></div>
+        <div class="metric-card"><div class="metric-label">Total Investido</div><div class="metric-val blue" id="ov-inv">R$ 0,00</div></div>
         <div class="metric-card"><div class="metric-label">Transações</div><div class="metric-val normal" id="ov-tx">0</div></div>
       </div>
       <div class="charts-row">
         <div class="card"><div class="card-title">Ganhos por Categoria</div><div class="legend" id="leg-g"></div><div class="chart-wrap"><canvas id="ch-g"></canvas></div></div>
         <div class="card"><div class="card-title">Gastos por Categoria</div><div class="legend" id="leg-gs"></div><div class="chart-wrap"><canvas id="ch-gs"></canvas></div></div>
+        <div class="card"><div class="card-title">Investimentos por Tipo</div><div class="legend" id="leg-inv-ov"></div><div class="chart-wrap"><canvas id="ch-inv-ov"></canvas></div></div>
       </div>
     </div>
 
@@ -872,8 +873,8 @@
       <div class="metric-row">
         <div class="metric-card"><div class="metric-label">Total Ganhos</div><div class="metric-val green" id="dt-g">R$ 0,00</div></div>
         <div class="metric-card"><div class="metric-label">Total Gastos</div><div class="metric-val red" id="dt-gs">R$ 0,00</div></div>
-        <div class="metric-card"><div class="metric-label">Investimentos Aplicados</div><div class="metric-val blue" id="dt-inv">R$ 0,00</div></div>
         <div class="metric-card"><div class="metric-label">Saldo Disponível</div><div class="metric-val normal" id="dt-s">R$ 0,00</div></div>
+        <div class="metric-card"><div class="metric-label">Investimentos Aplicados</div><div class="metric-val blue" id="dt-inv">R$ 0,00</div></div>
       </div>
       <div class="dist-blocks" style="grid-template-columns:1fr 1fr;">
         <div class="dist-block"><div class="dist-block-label green">Guardar</div><div class="dist-block-pct" id="pct-guard-label">50% do saldo</div><div class="dist-block-val green" id="db-guard">R$ 0,00</div><div class="prog-bar"><div class="prog-fill" id="pb-guard" style="background:var(--green);width:0%"></div></div></div>
@@ -1188,7 +1189,7 @@ async function sbFetch(path, opts = {}) {
 let currentUser = null;
 let isAdmin = false;
 let selCatG = null, selCatGS = null;
-let chG, chGS, chD, chHistM, chHistA;
+let chG, chGS, chD, chHistM, chHistA, chInvOv;
 let ud = defaultData();
 
 function defaultData() {
@@ -1309,8 +1310,8 @@ function doLogout() {
   document.getElementById('view-app').style.display   = 'none';
   document.getElementById('view-login').style.display = 'flex';
   goLogin();
-  [chG, chGS, chD, chHistM, chHistA].forEach(c => { if(c) c.destroy(); });
-  chG = chGS = chD = chHistM = chHistA = null;
+  [chG, chGS, chD, chHistM, chHistA, chInvOv].forEach(c => { if(c) c.destroy(); });
+  chG = chGS = chD = chHistM = chHistA = chInvOv = null;
 }
 
 // ── NAVEGAÇÃO LOGIN ────────────────────────────────────
@@ -2205,8 +2206,26 @@ function renderCharts() {
   document.getElementById('leg-gs').innerHTML = gsL.map((l,i) => `<div class="leg-item"><span class="leg-dot" style="background:${COLORS[i%COLORS.length]}"></span>${l}: ${fmt(gsV[i])}</div>`).join('');
   if (chG)  chG.destroy();
   if (chGS) chGS.destroy();
+  if (chInvOv) chInvOv.destroy();
   chG  = new Chart(document.getElementById('ch-g'),  { type:'doughnut', data: gL.length  ? {labels:gL,  datasets:[{data:gV,  backgroundColor:COLORS.slice(0,gL.length)}]}  : noData, options:donutOpts });
   chGS = new Chart(document.getElementById('ch-gs'), { type:'doughnut', data: gsL.length ? {labels:gsL, datasets:[{data:gsV, backgroundColor:COLORS.slice(0,gsL.length)}]} : noData, options:donutOpts });
+
+  // Gráfico de investimentos por tipo
+  const invFiltrados = (ud.investimentos||[]).filter(x => {
+    const d = new Date(x.data);
+    return mes === -1 ? d.getFullYear() === ano : d.getFullYear() === ano && d.getMonth() === mes;
+  });
+  const invGr = invFiltrados.reduce((a,x) => { a[x.cat]=(a[x.cat]||0)+x.valor; return a; }, {});
+  const invL = Object.keys(invGr), invV = Object.values(invGr);
+  const invCores = invL.map(c => INV_CORES[c]||'#A0A5B5');
+  document.getElementById('leg-inv-ov').innerHTML = invL.map((l,i) =>
+    `<div class="leg-item"><span class="leg-dot" style="background:${invCores[i]}"></span>${INV_ICONS[l]||'📦'} ${l}: ${fmt(invV[i])}</div>`
+  ).join('') || '<div style="font-size:13px;color:var(--text3);">Nenhum investimento neste período.</div>';
+  chInvOv = new Chart(document.getElementById('ch-inv-ov'), {
+    type:'doughnut',
+    data: invL.length ? {labels:invL, datasets:[{data:invV, backgroundColor:invCores}]} : noData,
+    options: donutOpts
+  });
 }
 
 // ── DISTRIBUIÇÃO ───────────────────────────────────────
