@@ -608,7 +608,7 @@
 .meta-alert { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; padding: 6px 10px; border-radius: 6px; margin-bottom: 10px; }
 .meta-alert.positivo { background: rgba(0,196,140,0.1); color: var(--green); border: 1px solid rgba(0,196,140,0.2); }
 .meta-alert.negativo { background: rgba(255,82,82,0.1); color: var(--red); border: 1px solid rgba(255,82,82,0.2); }
-.meta-alert.neutro { background: rgba(74,158,255,0.1); color: var(--blue); border: 1px solid rgba(74,158,255,0.2); }
+.meta-alert.neutro   { background: rgba(255,184,48,0.1); color: #FFB830; border: 1px solid rgba(255,184,48,0.2); }
 .metas-empty { text-align: center; padding: 3rem 1rem; color: var(--text3); font-size: 14px; }
 .metas-empty .icon { font-size: 40px; margin-bottom: 12px; }
 
@@ -1360,7 +1360,7 @@ function renderMetas() {
       if (concluida) {
         alertasHTML += `<div class="meta-alert positivo">🎉 Meta "<strong>${meta.nome}</strong>" concluída! Parabéns!</div>`;
       } else if (pct >= 80) {
-        alertasHTML += `<div class="meta-alert positivo">🔥 Quase lá! Meta "<strong>${meta.nome}</strong>" está ${pct}% concluída!</div>`;
+        alertasHTML += `<div class="meta-alert neutro">🔥 Quase lá! Meta "<strong>${meta.nome}</strong>" está ${pct}% concluída!</div>`;
       } else if (pct < 20 && progresso > 0) {
         alertasHTML += `<div class="meta-alert negativo">⚠️ Você se distanciou da meta "<strong>${meta.nome}</strong>". Só ${pct}% concluída.</div>`;
       }
@@ -1368,7 +1368,7 @@ function renderMetas() {
       if (ultrapassou) {
         alertasHTML += `<div class="meta-alert negativo">❌ Você ultrapassou o limite de "<strong>${meta.nome}</strong>"! Gastou ${fmt(progresso)} de ${fmt(meta.valor_alvo)}.</div>`;
       } else if (emPerigo) {
-        alertasHTML += `<div class="meta-alert negativo">⚠️ Atenção! Você já usou ${pct}% do limite de "<strong>${meta.nome}</strong>". Cuidado!</div>`;
+        alertasHTML += `<div class="meta-alert neutro">⚠️ Atenção! Você já usou ${pct}% do limite de "<strong>${meta.nome}</strong>". Cuidado!</div>`;
       } else if (pct < 50) {
         alertasHTML += `<div class="meta-alert positivo">✅ Ótimo controle! Você usou apenas ${pct}% do limite de "<strong>${meta.nome}</strong>".</div>`;
       }
@@ -1384,9 +1384,9 @@ function renderMetas() {
       } else if (diasRestantes <= 30) {
         if (!isEcon && !ultrapassou) {
           const porDia = faltando / diasRestantes;
-          alertasHTML += `<div class="meta-alert negativo">⏰ Meta "<strong>${meta.nome}</strong>" vence em ${diasRestantes} dias! Você pode gastar até <strong>${fmt(porDia)}/dia</strong> para ficar dentro do limite.</div>`;
+          alertasHTML += `<div class="meta-alert neutro">⏰ Meta "<strong>${meta.nome}</strong>" vence em ${diasRestantes} dias! Você pode gastar até <strong>${fmt(porDia)}/dia</strong> para ficar dentro do limite.</div>`;
         } else {
-          alertasHTML += `<div class="meta-alert negativo">⏰ Meta "<strong>${meta.nome}</strong>" vence em ${diasRestantes} dias!</div>`;
+          alertasHTML += `<div class="meta-alert neutro">⏰ Meta "<strong>${meta.nome}</strong>" vence em ${diasRestantes} dias!</div>`;
         }
         prazoHTML = !isEcon && !ultrapassou
           ? `<span style="color:#FFB830">⏰ ${diasRestantes} dias • até ${fmt(faltando / diasRestantes)}/dia</span>`
