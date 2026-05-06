@@ -2284,7 +2284,6 @@ function renderDist() {
   const tg = totalG(), tgs = totalGS();
   const totalInv = ud.investimentos ? ud.investimentos.reduce((s,x)=>s+x.valor,0) : 0;
   const saldo = tg - tgs - totalInv, s = Math.max(0, saldo);
-  const totalInv = ud.investimentos ? ud.investimentos.reduce((s,x)=>s+x.valor,0) : 0;
   document.getElementById('dt-g').textContent   = fmt(tg);
   document.getElementById('dt-gs').textContent  = fmt(tgs);
   document.getElementById('dt-inv').textContent = fmt(totalInv);
