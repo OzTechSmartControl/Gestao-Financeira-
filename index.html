@@ -2207,8 +2207,8 @@ function renderCharts() {
   if (chG)  chG.destroy();
   if (chGS) chGS.destroy();
   if (chInvOv) chInvOv.destroy();
-  chG  = new Chart(document.getElementById('ch-g'),  { type:'doughnut', data: gL.length  ? {labels:gL,  datasets:[{data:gV,  backgroundColor:COLORS.slice(0,gL.length)}]}  : noData, options:donutOpts });
-  chGS = new Chart(document.getElementById('ch-gs'), { type:'doughnut', data: gsL.length ? {labels:gsL, datasets:[{data:gsV, backgroundColor:COLORS.slice(0,gsL.length)}]} : noData, options:donutOpts });
+  chG  = new Chart(document.getElementById('ch-g'),  { type:'doughnut', data: gL.length  ? {labels:gL,  datasets:[{data:gV,  backgroundColor:['#00C48C','#56CF4B','#6EFFD6','#A0FFD0','#00A878'].slice(0,gL.length)}]}  : noData, options:donutOpts });
+  chGS = new Chart(document.getElementById('ch-gs'), { type:'doughnut', data: gsL.length ? {labels:gsL, datasets:[{data:gsV, backgroundColor:['#FF5252','#FF8A80','#FF6B6B','#FF4444','#CC0000'].slice(0,gsL.length)}]} : noData, options:donutOpts });
 
   // Gráfico de investimentos por tipo
   const invFiltrados = (ud.investimentos||[]).filter(x => {
@@ -2223,7 +2223,7 @@ function renderCharts() {
   ).join('') || '<div style="font-size:13px;color:var(--text3);">Nenhum investimento neste período.</div>';
   chInvOv = new Chart(document.getElementById('ch-inv-ov'), {
     type:'doughnut',
-    data: invL.length ? {labels:invL, datasets:[{data:invV, backgroundColor:invCores}]} : noData,
+    data: invL.length ? {labels:invL, datasets:[{data:invV, backgroundColor:['#4A9EFF','#6BB8FF','#3080E8','#1A5FD4','#0D4AC0'].slice(0,invL.length)}]} : noData,
     options: donutOpts
   });
 }
