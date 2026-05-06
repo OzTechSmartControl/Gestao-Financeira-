@@ -1835,8 +1835,15 @@ async function doarAcesso() {
   if (!email) { showMsg('doacao-msg','error','Informe o e-mail do usuário.'); return; }
   setLoading(true);
   try {
-    // Buscar perfil pelo email
-    const perfis = await sbFetch(`perfis?email=eq.${encodeURIComponent(email)}`);
+    // Buscar perfil pelo email usando service key para bypass RLS
+    const resPerfil = await fetch(`${SUPA_URL}/rest/v1/perfis?email=eq.${encodeURIComponent(email)}`, {
+      headers: {
+        'apikey': 'sb_secret_fdNAGdaPDmGTIC1mWA0IBw_TgUA8dzh',
+        'Authorization': 'Bearer sb_secret_fdNAGdaPDmGTIC1mWA0IBw_TgUA8dzh',
+        'Content-Type': 'application/json'
+      }
+    });
+    const perfis = await resPerfil.json();
     if (!perfis.length) { showMsg('doacao-msg','error','Usuário não encontrado.'); setLoading(false); return; }
     const perfil = perfis[0];
     const expira = expDias > 0 ? new Date(Date.now() + expDias*24*60*60*1000).toISOString() : null;
