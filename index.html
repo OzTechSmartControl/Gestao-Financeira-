@@ -1382,8 +1382,15 @@ function renderMetas() {
         alertasHTML += `<div class="meta-alert negativo">❌ A meta "<strong>${meta.nome}</strong>" venceu há ${Math.abs(diasRestantes)} dias sem ser concluída.</div>`;
         prazoHTML = `<span style="color:var(--red)">Vencida há ${Math.abs(diasRestantes)} dias</span>`;
       } else if (diasRestantes <= 30) {
-        alertasHTML += `<div class="meta-alert negativo">⏰ Meta "<strong>${meta.nome}</strong>" vence em ${diasRestantes} dias!</div>`;
-        prazoHTML = `<span style="color:#FFB830">⏰ Vence em ${diasRestantes} dias</span>`;
+        if (!isEcon && !ultrapassou) {
+          const porDia = faltando / diasRestantes;
+          alertasHTML += `<div class="meta-alert negativo">⏰ Meta "<strong>${meta.nome}</strong>" vence em ${diasRestantes} dias! Você pode gastar até <strong>${fmt(porDia)}/dia</strong> para ficar dentro do limite.</div>`;
+        } else {
+          alertasHTML += `<div class="meta-alert negativo">⏰ Meta "<strong>${meta.nome}</strong>" vence em ${diasRestantes} dias!</div>`;
+        }
+        prazoHTML = !isEcon && !ultrapassou
+          ? `<span style="color:#FFB830">⏰ ${diasRestantes} dias • até ${fmt(faltando / diasRestantes)}/dia</span>`
+          : `<span style="color:#FFB830">⏰ Vence em ${diasRestantes} dias</span>`;
       } else {
         prazoHTML = `<span>Prazo: ${new Date(meta.prazo).toLocaleDateString('pt-BR')}</span>`;
       }
