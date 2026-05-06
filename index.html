@@ -858,6 +858,7 @@
 // ── CONFIG SUPABASE ────────────────────────────────────
 const SUPA_URL = 'https://bevcgzvqqnubvoivcbva.supabase.co';
 const SUPA_KEY = 'sb_publishable_gBDJMbhgwchvhifQUCiNSw_MS--CGGY';
+const SUPA_SERVICE_KEY = 'sb_secret_fd_rT9f2SA6VAU-gntz8MQ_SYQOBEzk';
 const ADMIN_EMAIL = 'oztechsmartcontrol@gmail.com';
 
 // ── API HELPERS ────────────────────────────────────────
@@ -931,7 +932,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         currentUser = s.user;
         // Verificar se ainda está ativo
         const perfil = await sbFetch(`perfis?id=eq.${currentUser.id}&select=ativo`);
-        if (perfil.length && perfil[0].ativo === false) {
+        if (!perfil.length || perfil[0].ativo === false) {
           localStorage.removeItem('oztech_session');
           authToken = null; currentUser = null;
           return;
@@ -964,10 +965,10 @@ async function doLogin() {
   // Verificar se usuário está ativo
   try {
     const perfil = await sbFetch(`perfis?id=eq.${currentUser.id}&select=ativo`);
-    if (perfil.length && perfil[0].ativo === false) {
+    if (!perfil.length || perfil[0].ativo === false) {
       authToken = null; currentUser = null;
       const el = document.getElementById('login-error');
-      el.textContent = 'Sua conta foi desativada. Entre em contato com o administrador.';
+      el.textContent = 'Sua conta foi desativada ou excluída. Entre em contato com o administrador.';
       el.style.display = 'block';
       setLoading(false);
       return;
@@ -1214,6 +1215,14 @@ async function excluirUsuario(id, nome) {
     await sbFetch(`gastos?user_id=eq.${id}`,     { method: 'DELETE', prefer: 'return=minimal' });
     await sbFetch(`categorias?user_id=eq.${id}`, { method: 'DELETE', prefer: 'return=minimal' });
     await sbFetch(`perfis?id=eq.${id}`,          { method: 'DELETE', prefer: 'return=minimal' });
+    // Remover do Supabase Auth (requer service key)
+    await fetch(`${SUPA_URL}/auth/v1/admin/users/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'apikey': SUPA_SERVICE_KEY,
+        'Authorization': 'Bearer ' + SUPA_SERVICE_KEY
+      }
+    });
     carregarAdminData();
   } catch(e) { alert('Erro ao excluir: ' + e.message); }
   setLoading(false);
