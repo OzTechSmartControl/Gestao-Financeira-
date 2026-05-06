@@ -585,6 +585,18 @@
   .back-btn:hover { color: var(--text); }
 
 
+/* ── PERFIS DE DISTRIBUIÇÃO ─────────────── */
+.perfil-btn {
+  background: var(--bg3); border: 2px solid var(--border);
+  border-radius: var(--radius-sm); padding: 14px 10px;
+  text-align: center; cursor: pointer; transition: all 0.2s;
+}
+.perfil-btn:hover { border-color: rgba(74,158,255,0.4); background: rgba(74,158,255,0.05); }
+.perfil-btn.ativo { border-color: var(--blue); background: rgba(74,158,255,0.08); }
+.perfil-icon { font-size: 24px; margin-bottom: 6px; }
+.perfil-nome { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.perfil-pcts { font-size: 11px; color: var(--text3); font-family: 'JetBrains Mono', monospace; }
+
 /* ── METAS ──────────────────────────────── */
 .meta-card {
   background: var(--bg2); border: 1px solid var(--border);
@@ -839,11 +851,68 @@
         <div class="metric-card"><div class="metric-label">Saldo Disponível</div><div class="metric-val normal" id="dt-s">R$ 0,00</div></div>
       </div>
       <div class="dist-blocks">
-        <div class="dist-block"><div class="dist-block-label green">Guardar</div><div class="dist-block-pct">50% do saldo</div><div class="dist-block-val green" id="db-guard">R$ 0,00</div><div class="prog-bar"><div class="prog-fill" id="pb-guard" style="background:var(--green);width:0%"></div></div></div>
-        <div class="dist-block"><div class="dist-block-label blue">Investir</div><div class="dist-block-pct">25% do saldo</div><div class="dist-block-val blue" id="db-inv">R$ 0,00</div><div class="prog-bar"><div class="prog-fill" id="pb-inv" style="background:var(--blue);width:0%"></div></div></div>
-        <div class="dist-block"><div class="dist-block-label red">Gastar</div><div class="dist-block-pct">25% do saldo</div><div class="dist-block-val red" id="db-gast">R$ 0,00</div><div class="prog-bar"><div class="prog-fill" id="pb-gast" style="background:var(--red);width:0%"></div></div></div>
+        <div class="dist-block"><div class="dist-block-label green">Guardar</div><div class="dist-block-pct" id="pct-guard-label">50% do saldo</div><div class="dist-block-val green" id="db-guard">R$ 0,00</div><div class="prog-bar"><div class="prog-fill" id="pb-guard" style="background:var(--green);width:0%"></div></div></div>
+        <div class="dist-block"><div class="dist-block-label blue">Investir</div><div class="dist-block-pct" id="pct-inv-label">25% do saldo</div><div class="dist-block-val blue" id="db-inv">R$ 0,00</div><div class="prog-bar"><div class="prog-fill" id="pb-inv" style="background:var(--blue);width:0%"></div></div></div>
+        <div class="dist-block"><div class="dist-block-label red">Gastar</div><div class="dist-block-pct" id="pct-gast-label">25% do saldo</div><div class="dist-block-val red" id="db-gast">R$ 0,00</div><div class="prog-bar"><div class="prog-fill" id="pb-gast" style="background:var(--red);width:0%"></div></div></div>
       </div>
-      <div class="card" style="margin-top:1rem;"><div class="card-title">Distribuição Ideal do Saldo</div><div class="legend" id="leg-dist"></div><div class="chart-wrap" style="height:180px;"><canvas id="ch-dist"></canvas></div></div>
+
+      <!-- Perfis e personalização -->
+      <div class="card" style="margin-top:1rem;">
+        <div class="card-title">Perfil de distribuição</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.25rem;" id="perfis-grid">
+          <div class="perfil-btn" onclick="aplicarPerfil('equilibrado')" id="perfil-equilibrado">
+            <div class="perfil-icon">⚖️</div>
+            <div class="perfil-nome">Equilibrado</div>
+            <div class="perfil-pcts">50 · 25 · 25</div>
+          </div>
+          <div class="perfil-btn" onclick="aplicarPerfil('conservador')" id="perfil-conservador">
+            <div class="perfil-icon">🛡️</div>
+            <div class="perfil-nome">Conservador</div>
+            <div class="perfil-pcts">60 · 30 · 10</div>
+          </div>
+          <div class="perfil-btn" onclick="aplicarPerfil('investidor')" id="perfil-investidor">
+            <div class="perfil-icon">📈</div>
+            <div class="perfil-nome">Investidor</div>
+            <div class="perfil-pcts">20 · 60 · 20</div>
+          </div>
+          <div class="perfil-btn" onclick="aplicarPerfil('confortavel')" id="perfil-confortavel">
+            <div class="perfil-icon">😊</div>
+            <div class="perfil-nome">Confortável</div>
+            <div class="perfil-pcts">30 · 20 · 50</div>
+          </div>
+        </div>
+
+        <div class="card-title" style="margin-bottom:12px;">Personalizar distribuição <span style="font-size:11px;color:var(--text3);font-weight:400;">— total deve ser 100%</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px;">
+          <div>
+            <label class="f-label" style="color:var(--green);">💚 Guardar (%)</label>
+            <input class="f-input" type="number" id="inp-dist-guard" min="0" max="100" step="1" value="50" oninput="atualizarDistTotal()">
+          </div>
+          <div>
+            <label class="f-label" style="color:var(--blue);">🔵 Investir (%)</label>
+            <input class="f-input" type="number" id="inp-dist-inv" min="0" max="100" step="1" value="25" oninput="atualizarDistTotal()">
+          </div>
+          <div>
+            <label class="f-label" style="color:var(--red);">🔴 Gastar (%)</label>
+            <input class="f-input" type="number" id="inp-dist-gast" min="0" max="100" step="1" value="25" oninput="atualizarDistTotal()">
+          </div>
+        </div>
+        <div id="dist-total-msg" style="font-size:13px;margin-bottom:14px;color:var(--green);">✅ Total: 100%</div>
+        <button class="btn-submit blue" style="width:auto;padding:10px 24px;" onclick="salvarDistribuicao()">💾 Salvar distribuição</button>
+      </div>
+
+      <!-- Gráfico -->
+      <div class="card" style="margin-top:1rem;">
+        <div class="card-title">Distribuição Ideal do Saldo</div>
+        <div class="legend" id="leg-dist"></div>
+        <div class="chart-wrap" style="height:180px;"><canvas id="ch-dist"></canvas></div>
+      </div>
+
+      <!-- Integração com metas -->
+      <div class="card" style="margin-top:1rem;" id="dist-metas-card">
+        <div class="card-title">🎯 Metas vinculadas</div>
+        <div id="dist-metas-lista"><div class="empty">Nenhuma meta ativa.</div></div>
+      </div>
     </div>
 
     <!-- HISTÓRICO -->
@@ -1137,6 +1206,7 @@ async function enterApp() {
   document.querySelectorAll('.page').forEach((p,i) => p.classList.toggle('active', i===0));
   setNow();
   await carregarPerfil();
+  carregarDistribuicao();
   loadData().then(() => renderAll());
   injetarHistorico();
   verificarPagamento();
@@ -1836,6 +1906,81 @@ function renderCharts() {
 }
 
 // ── DISTRIBUIÇÃO ───────────────────────────────────────
+let distGuardar = 50, distInvestir = 25, distGastar = 25;
+
+const PERFIS = {
+  equilibrado: { guardar: 50, investir: 25, gastar: 25 },
+  conservador: { guardar: 60, investir: 30, gastar: 10 },
+  investidor:  { guardar: 20, investir: 60, gastar: 20 },
+  confortavel: { guardar: 30, investir: 20, gastar: 50 }
+};
+
+function carregarDistribuicao() {
+  if (currentPerfil) {
+    distGuardar = parseFloat(currentPerfil.dist_guardar) || 50;
+    distInvestir = parseFloat(currentPerfil.dist_investir) || 25;
+    distGastar  = parseFloat(currentPerfil.dist_gastar) || 25;
+  }
+  document.getElementById('inp-dist-guard').value = distGuardar;
+  document.getElementById('inp-dist-inv').value   = distInvestir;
+  document.getElementById('inp-dist-gast').value  = distGastar;
+  atualizarDistTotal();
+  destacarPerfilAtivo();
+}
+
+function destacarPerfilAtivo() {
+  Object.keys(PERFIS).forEach(p => {
+    const el = document.getElementById('perfil-'+p);
+    if (!el) return;
+    const match = PERFIS[p].guardar === distGuardar && PERFIS[p].investir === distInvestir && PERFIS[p].gastar === distGastar;
+    el.classList.toggle('ativo', match);
+  });
+}
+
+function aplicarPerfil(nome) {
+  const p = PERFIS[nome];
+  distGuardar = p.guardar; distInvestir = p.investir; distGastar = p.gastar;
+  document.getElementById('inp-dist-guard').value = distGuardar;
+  document.getElementById('inp-dist-inv').value   = distInvestir;
+  document.getElementById('inp-dist-gast').value  = distGastar;
+  atualizarDistTotal();
+  destacarPerfilAtivo();
+  renderDist();
+}
+
+function atualizarDistTotal() {
+  const g  = parseFloat(document.getElementById('inp-dist-guard').value) || 0;
+  const i  = parseFloat(document.getElementById('inp-dist-inv').value)   || 0;
+  const gs = parseFloat(document.getElementById('inp-dist-gast').value)  || 0;
+  const total = g + i + gs;
+  const el = document.getElementById('dist-total-msg');
+  if (total === 100) {
+    el.style.color = 'var(--green)'; el.textContent = '✅ Total: 100%';
+  } else {
+    el.style.color = 'var(--red)'; el.textContent = `❌ Total: ${total}% (deve ser 100%)`;
+  }
+  distGuardar = g; distInvestir = i; distGastar = gs;
+  destacarPerfilAtivo();
+  renderDist();
+}
+
+async function salvarDistribuicao() {
+  const g  = parseFloat(document.getElementById('inp-dist-guard').value) || 0;
+  const i  = parseFloat(document.getElementById('inp-dist-inv').value)   || 0;
+  const gs = parseFloat(document.getElementById('inp-dist-gast').value)  || 0;
+  if (g + i + gs !== 100) { alert('A soma dos percentuais deve ser 100%.'); return; }
+  setLoading(true);
+  try {
+    await sbFetch(`perfis?id=eq.${currentUser.id}`, {
+      method: 'PATCH', prefer: 'return=minimal',
+      body: JSON.stringify({ dist_guardar: g, dist_investir: i, dist_gastar: gs })
+    });
+    if (currentPerfil) { currentPerfil.dist_guardar = g; currentPerfil.dist_investir = i; currentPerfil.dist_gastar = gs; }
+    alert('✅ Distribuição salva com sucesso!');
+  } catch(e) { alert('Erro: ' + e.message); }
+  setLoading(false);
+}
+
 function renderDist() {
   const tg = totalG(), tgs = totalGS(), saldo = tg - tgs, s = Math.max(0, saldo);
   document.getElementById('dt-g').textContent  = fmt(tg);
@@ -1845,24 +1990,72 @@ function renderDist() {
   salEl.className = 'metric-val ' + (saldo >= 0 ? 'green' : 'red');
   const info = document.getElementById('dist-info');
   if (saldo < 0) { info.className='dist-info red'; info.textContent='Saldo negativo: os gastos superam os ganhos.'; }
-  else           { info.className='dist-info purple'; info.textContent='Distribuição calculada sobre o saldo disponível: '+fmt(s)+' (ganhos − gastos).'; }
-  const mG=s*.5, mI=s*.25, mGs=s*.25;
+  else { info.className='dist-info purple'; info.textContent=`Distribuição calculada sobre o saldo disponível: ${fmt(s)} (ganhos − gastos).`; }
+
+  const pG  = distGuardar/100, pI = distInvestir/100, pGs = distGastar/100;
+  const mG  = s * pG, mI = s * pI, mGs = s * pGs;
+
   document.getElementById('db-guard').textContent = fmt(mG);
   document.getElementById('db-inv').textContent   = fmt(mI);
   document.getElementById('db-gast').textContent  = fmt(mGs);
+  document.getElementById('pct-guard-label').textContent = `${distGuardar}% do saldo`;
+  document.getElementById('pct-inv-label').textContent   = `${distInvestir}% do saldo`;
+  document.getElementById('pct-gast-label').textContent  = `${distGastar}% do saldo`;
   document.getElementById('pb-guard').style.width = s>0?'100%':'0%';
   document.getElementById('pb-inv').style.width   = s>0?'100%':'0%';
   document.getElementById('pb-gast').style.width  = s>0?'100%':'0%';
   document.getElementById('leg-dist').innerHTML =
-    `<div class="leg-item"><span class="leg-dot" style="background:#00C48C"></span>Guardar 50%: ${fmt(mG)}</div>` +
-    `<div class="leg-item"><span class="leg-dot" style="background:#4A9EFF"></span>Investir 25%: ${fmt(mI)}</div>` +
-    `<div class="leg-item"><span class="leg-dot" style="background:#FF5252"></span>Gastar 25%: ${fmt(mGs)}</div>`;
+    `<div class="leg-item"><span class="leg-dot" style="background:#00C48C"></span>Guardar ${distGuardar}%: ${fmt(mG)}</div>` +
+    `<div class="leg-item"><span class="leg-dot" style="background:#4A9EFF"></span>Investir ${distInvestir}%: ${fmt(mI)}</div>` +
+    `<div class="leg-item"><span class="leg-dot" style="background:#FF5252"></span>Gastar ${distGastar}%: ${fmt(mGs)}</div>`;
   if (chD) chD.destroy();
   chD = new Chart(document.getElementById('ch-dist'), {
     type:'doughnut',
-    data: s>0 ? {labels:['Guardar 50%','Investir 25%','Gastar 25%'],datasets:[{data:[mG,mI,mGs],backgroundColor:['#00C48C','#4A9EFF','#FF5252']}]} : noData,
+    data: s>0 ? {labels:[`Guardar ${distGuardar}%`,`Investir ${distInvestir}%`,`Gastar ${distGastar}%`],datasets:[{data:[mG,mI,mGs],backgroundColor:['#00C48C','#4A9EFF','#FF5252']}]} : noData,
     options: donutOpts
   });
+
+  // Integração com metas
+  renderDistMetas(mG, mGs);
+}
+
+function renderDistMetas(valorGuardar, valorGastar) {
+  const el = document.getElementById('dist-metas-lista');
+  if (!metas.length) { el.innerHTML = '<div class="empty">Nenhuma meta ativa. Crie metas na aba 🎯 Metas.</div>'; return; }
+  const metasEcon  = metas.filter(m => m.tipo === 'economia');
+  const metasGasto = metas.filter(m => m.tipo === 'gasto');
+  let html = '';
+
+  if (metasEcon.length) {
+    html += `<div style="font-size:12px;font-weight:600;color:var(--green);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.06em;">💚 Guardar (${distGuardar}%) — ${fmt(valorGuardar)}</div>`;
+    const totalAlvoEcon = metasEcon.reduce((s, m) => s + parseFloat(m.valor_alvo), 0);
+    metasEcon.forEach(m => {
+      const proporcao = totalAlvoEcon > 0 ? parseFloat(m.valor_alvo) / totalAlvoEcon : 1 / metasEcon.length;
+      const valorMeta = valorGuardar * proporcao;
+      const progresso = calcularProgressoMeta(m);
+      const pct = Math.min(100, Math.round((progresso / m.valor_alvo) * 100));
+      html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);">
+        <div><div style="font-size:13px;font-weight:500;">${m.nome}</div><div style="font-size:11px;color:var(--text3);">${pct}% concluída</div></div>
+        <div style="text-align:right;"><div style="font-size:14px;font-weight:600;color:var(--green);">${fmt(valorMeta)}/mês</div><div style="font-size:11px;color:var(--text3);">${Math.round(proporcao*100)}% do guardar</div></div>
+      </div>`;
+    });
+    html += '<div style="margin-bottom:16px;"></div>';
+  }
+
+  if (metasGasto.length) {
+    html += `<div style="font-size:12px;font-weight:600;color:var(--red);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.06em;">🔴 Gastar (${distGastar}%) — ${fmt(valorGastar)}</div>`;
+    metasGasto.forEach(m => {
+      const progresso = calcularProgressoMeta(m);
+      const pct = Math.min(100, Math.round((progresso / m.valor_alvo) * 100));
+      const ultrapassou = progresso > m.valor_alvo;
+      html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);">
+        <div><div style="font-size:13px;font-weight:500;">${m.nome}</div><div style="font-size:11px;color:var(--text3);">Limite: ${fmt(m.valor_alvo)}</div></div>
+        <div style="text-align:right;"><div style="font-size:14px;font-weight:600;color:${ultrapassou?'var(--red)':'var(--green)'};">${fmt(progresso)} usado</div><div style="font-size:11px;color:var(--text3);">${pct}% do limite</div></div>
+      </div>`;
+    });
+  }
+
+  el.innerHTML = html || '<div class="empty">Nenhuma meta ativa.</div>';
 }
 
 // ── RENDER GERAL ───────────────────────────────────────
