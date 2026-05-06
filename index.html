@@ -1547,7 +1547,6 @@ function renderMetas() {
         <div class="meta-val-item">${isEcon ? 'Meta' : 'Limite'}<span>${fmt(meta.valor_alvo)}</span></div>
         <div class="meta-val-item">${isEcon ? 'Faltando' : 'Disponível'}<span style="color:${isEcon ? (faltando>0?'var(--red)':'var(--green)') : (ultrapassou?'var(--red)':'var(--green)')}">${ultrapassou ? '⛔ '+fmt(progresso - meta.valor_alvo)+' acima' : faltando > 0 ? fmt(faltando) : (isEcon ? '✅ Concluída!' : '✅ No limite!')}</span></div>
         ${porDiaEconomiaHTML}
-        ${tempo && isEcon && !concluida && !meta.prazo ? `<div class="meta-val-item">Tempo estimado<span style="color:#8B7CF6">${tempo.texto}</span></div>` : ''}
       </div>
       <div class="meta-progress-bar">
         <div class="meta-progress-fill" style="width:${pct}%;background:${cor};"></div>
@@ -1555,7 +1554,6 @@ function renderMetas() {
       <div class="meta-footer">
         <span style="color:${cor};font-weight:600;">${pct}% ${isEcon ? 'concluído' : 'do limite usado'}</span>
         ${prazoHTML}
-        ${tempo && isEcon && !concluida && tempo.meses > 0 ? `<span style="color:#8B7CF6">⏱ ${tempo.texto} para concluir</span>` : ''}
       </div>
       ${simulacaoHTML}
     </div>`;
