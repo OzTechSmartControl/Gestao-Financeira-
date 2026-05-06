@@ -1042,7 +1042,7 @@ async function doLogin() {
   enterApp();
 }
 
-function enterApp() {
+async function enterApp() {
   document.getElementById('view-login').style.display = 'none';
   document.getElementById('view-app').style.display   = 'block';
   const nome = currentUser.user_metadata?.nome || currentUser.email.split('@')[0];
