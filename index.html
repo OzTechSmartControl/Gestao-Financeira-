@@ -1104,12 +1104,15 @@ function goReset()  {
 function goPlanos() { showStep('step-planos'); }
 
 async function irParaPagamento(plano) {
-  // Pagamento público — sem user_id ainda, será criado após confirmação
   setLoading(true);
   try {
     const res = await fetch(`${SUPA_URL}/functions/v1/create-payment`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'apikey': SUPA_KEY },
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPA_KEY,
+        'Authorization': 'Bearer ' + SUPA_KEY
+      },
       body: JSON.stringify({ plano, user_id: 'novo', user_email: '' })
     });
     const data = await res.json();
