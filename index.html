@@ -1342,18 +1342,36 @@ function renderMetas() {
     const progresso  = calcularProgressoMeta(meta);
     const pct        = Math.min(100, Math.round((progresso / meta.valor_alvo) * 100));
     const faltando   = Math.max(0, meta.valor_alvo - progresso);
-    const concluida  = pct >= 100;
-    const tempo      = calcularTempoMedio(meta, progresso);
+    const concluida  = meta.tipo === 'economia' && pct >= 100;
+    const ultrapassou = meta.tipo === 'gasto' && progresso > meta.valor_alvo;
+    const emPerigo   = meta.tipo === 'gasto' && pct >= 80 && !ultrapassou;
     const isEcon     = meta.tipo === 'economia';
-    const cor        = concluida ? '#00C48C' : isEcon ? '#4A9EFF' : pct > 80 ? '#FF5252' : '#FFB830';
+
+    // Cor dinâmica
+    let cor;
+    if (isEcon) {
+      cor = concluida ? '#00C48C' : pct >= 80 ? '#00C48C' : '#4A9EFF';
+    } else {
+      cor = ultrapassou ? '#FF5252' : pct >= 80 ? '#FFB830' : '#00C48C';
+    }
 
     // Alertas
-    if (concluida) {
-      alertasHTML += `<div class="meta-alert positivo">🎉 Meta "<strong>${meta.nome}</strong>" concluída ou ultrapassada! Parabéns!</div>`;
-    } else if (pct >= 80) {
-      alertasHTML += `<div class="meta-alert positivo">🔥 Você está quase lá! Meta "<strong>${meta.nome}</strong>" está ${pct}% concluída!</div>`;
-    } else if (pct < 20 && progresso > 0) {
-      alertasHTML += `<div class="meta-alert negativo">⚠️ Você se distanciou da meta "<strong>${meta.nome}</strong>". Só ${pct}% concluída.</div>`;
+    if (isEcon) {
+      if (concluida) {
+        alertasHTML += `<div class="meta-alert positivo">🎉 Meta "<strong>${meta.nome}</strong>" concluída! Parabéns!</div>`;
+      } else if (pct >= 80) {
+        alertasHTML += `<div class="meta-alert positivo">🔥 Quase lá! Meta "<strong>${meta.nome}</strong>" está ${pct}% concluída!</div>`;
+      } else if (pct < 20 && progresso > 0) {
+        alertasHTML += `<div class="meta-alert negativo">⚠️ Você se distanciou da meta "<strong>${meta.nome}</strong>". Só ${pct}% concluída.</div>`;
+      }
+    } else {
+      if (ultrapassou) {
+        alertasHTML += `<div class="meta-alert negativo">❌ Você ultrapassou o limite de "<strong>${meta.nome}</strong>"! Gastou ${fmt(progresso)} de ${fmt(meta.valor_alvo)}.</div>`;
+      } else if (emPerigo) {
+        alertasHTML += `<div class="meta-alert negativo">⚠️ Atenção! Você já usou ${pct}% do limite de "<strong>${meta.nome}</strong>". Cuidado!</div>`;
+      } else if (pct < 50) {
+        alertasHTML += `<div class="meta-alert positivo">✅ Ótimo controle! Você usou apenas ${pct}% do limite de "<strong>${meta.nome}</strong>".</div>`;
+      }
     }
 
     // Verificar prazo
@@ -1371,8 +1389,10 @@ function renderMetas() {
       }
     }
 
+    const tempo = calcularTempoMedio(meta, progresso);
+
     metasHTML += `
-    <div class="meta-card ${concluida ? 'concluida' : ''}">
+    <div class="meta-card ${concluida ? 'concluida' : ultrapassou ? 'falhou' : ''}">
       <div class="meta-header">
         <div>
           <div class="meta-nome">${meta.nome}</div>
@@ -1381,18 +1401,18 @@ function renderMetas() {
         <button class="del-btn" onclick="excluirMeta(${meta.id})" title="Excluir meta">×</button>
       </div>
       <div class="meta-valores">
-        <div class="meta-val-item">Progresso<span style="color:${cor}">${fmt(progresso)}</span></div>
-        <div class="meta-val-item">Meta<span>${fmt(meta.valor_alvo)}</span></div>
-        <div class="meta-val-item">Faltando<span style="color:${faltando>0?'var(--red)':'var(--green)'}">${faltando > 0 ? fmt(faltando) : '✅ Concluída!'}</span></div>
-        ${tempo && !concluida ? `<div class="meta-val-item">Tempo estimado<span style="color:#8B7CF6">${tempo.texto}</span></div>` : ''}
+        <div class="meta-val-item">${isEcon ? 'Guardado' : 'Gasto'}<span style="color:${cor}">${fmt(progresso)}</span></div>
+        <div class="meta-val-item">${isEcon ? 'Meta' : 'Limite'}<span>${fmt(meta.valor_alvo)}</span></div>
+        <div class="meta-val-item">${isEcon ? 'Faltando' : 'Disponível'}<span style="color:${isEcon ? (faltando>0?'var(--red)':'var(--green)') : (ultrapassou?'var(--red)':'var(--green)')}">${ultrapassou ? '⛔ '+fmt(progresso - meta.valor_alvo)+' acima' : faltando > 0 ? fmt(faltando) : (isEcon ? '✅ Concluída!' : '✅ No limite!')}</span></div>
+        ${tempo && isEcon && !concluida ? `<div class="meta-val-item">Tempo estimado<span style="color:#8B7CF6">${tempo.texto}</span></div>` : ''}
       </div>
       <div class="meta-progress-bar">
         <div class="meta-progress-fill" style="width:${pct}%;background:${cor};"></div>
       </div>
       <div class="meta-footer">
-        <span style="color:${cor};font-weight:600;">${pct}% concluído</span>
+        <span style="color:${cor};font-weight:600;">${pct}% ${isEcon ? 'concluído' : 'do limite usado'}</span>
         ${prazoHTML}
-        ${tempo && !concluida && tempo.meses > 0 ? `<span style="color:#8B7CF6">⏱ ${tempo.texto} para concluir</span>` : ''}
+        ${tempo && isEcon && !concluida && tempo.meses > 0 ? `<span style="color:#8B7CF6">⏱ ${tempo.texto} para concluir</span>` : ''}
       </div>
     </div>`;
   });
