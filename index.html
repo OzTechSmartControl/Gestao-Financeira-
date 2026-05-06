@@ -1423,7 +1423,6 @@ function renderInvestimentos() {
   if (!ud.investimentos) ud.investimentos = [];
   const invs = ud.investimentos;
   const hoje = new Date();
-  const mesAtual = hoje.getMonth(), anoAtual = getFullYear ? hoje.getFullYear() : hoje.getFullYear();
 
   // Métricas
   const total    = invs.reduce((s,x) => s+x.valor, 0);
