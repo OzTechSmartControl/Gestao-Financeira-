@@ -1137,11 +1137,6 @@
         <div class="login-msg" id="doacao-msg"></div>
       </div>
 
-      <!-- Lista de acessos doados -->
-      <div class="card">
-        <div class="card-title">🎁 Acessos doados</div>
-        <div id="lista-acessos-doados"><div class="empty">Nenhum acesso doado ainda.</div></div>
-      </div>
       <!-- Lista de convites -->
       <div class="card">
         <div class="card-title">Convites gerados</div>
@@ -1269,51 +1264,12 @@ async function doLogin() {
   try {
     const perfil = await sbFetch(`perfis?id=eq.${currentUser.id}&select=ativo`);
     if (!perfil.length || perfil[0].ativo === false) {
-      // Verificar se tem acesso doado na tabela acessos_doados
-      try {
-        const emailUser = currentUser.email.toLowerCase();
-        const acessoDoado = await sbFetch(`acessos_doados?email=eq.${encodeURIComponent(emailUser)}&ativo=eq.true`);
-        if (acessoDoado.length) {
-          // Tem acesso doado! Criar perfil automaticamente
-          const ad = acessoDoado[0];
-          const expirou = ad.expira_em && new Date(ad.expira_em) < new Date();
-          if (!expirou) {
-            await sbFetch('perfis', {
-              method: 'POST', prefer: 'return=minimal',
-              body: JSON.stringify({
-                id: currentUser.id,
-                nome: currentUser.user_metadata?.nome || emailUser.split('@')[0],
-                email: emailUser,
-                ativo: true,
-                acesso_doado: true,
-                doacao_expira_em: ad.expira_em || null
-              })
-            });
-            // Continuar login normalmente
-          } else {
-            authToken = null; currentUser = null;
-            const el = document.getElementById('login-error');
-            el.textContent = 'Seu acesso doado expirou. Entre em contato com o administrador.';
-            el.style.display = 'block';
-            setLoading(false);
-            return;
-          }
-        } else {
-          authToken = null; currentUser = null;
-          const el = document.getElementById('login-error');
-          el.textContent = 'Sua conta foi desativada ou excluída. Entre em contato com o administrador.';
-          el.style.display = 'block';
-          setLoading(false);
-          return;
-        }
-      } catch(e2) {
-        authToken = null; currentUser = null;
-        const el = document.getElementById('login-error');
-        el.textContent = 'Sua conta foi desativada ou excluída. Entre em contato com o administrador.';
-        el.style.display = 'block';
-        setLoading(false);
-        return;
-      }
+      authToken = null; currentUser = null;
+      const el = document.getElementById('login-error');
+      el.textContent = 'Sua conta foi desativada ou excluída. Entre em contato com o administrador.';
+      el.style.display = 'block';
+      setLoading(false);
+      return;
     }
   } catch(e) { console.error('Erro ao verificar perfil:', e); }
 
@@ -1874,40 +1830,27 @@ function renderPlanoAtual() {
 
 // ── DOAÇÃO DE ACESSO ───────────────────────────────────
 async function doarAcesso() {
-  const email   = document.getElementById('doacao-email').value.trim().toLowerCase();
+  const email   = document.getElementById('doacao-email').value.trim();
   const expDias = parseInt(document.getElementById('doacao-expira').value);
-  if (!email) { showMsg('doacao-msg','error','Informe o e-mail.'); return; }
+  if (!email) { showMsg('doacao-msg','error','Informe o e-mail do usuário.'); return; }
   setLoading(true);
   try {
-    const expira = expDias > 0 ? new Date(Date.now() + expDias*24*60*60*1000).toISOString() : null;
-
-    // Verificar se já existe na tabela acessos_doados
-    const existente = await sbFetch(`acessos_doados?email=eq.${encodeURIComponent(email)}`);
-    if (existente.length) {
-      // Atualizar expiração
-      await sbFetch(`acessos_doados?email=eq.${encodeURIComponent(email)}`, {
-        method: 'PATCH', prefer: 'return=minimal',
-        body: JSON.stringify({ expira_em: expira, ativo: true, doado_por: currentUser.email })
-      });
-    } else {
-      // Inserir novo acesso doado
-      await sbFetch('acessos_doados', {
-        method: 'POST', prefer: 'return=minimal',
-        body: JSON.stringify({ email, expira_em: expira, ativo: true, doado_por: currentUser.email })
-      });
-    }
-
-    // Se o usuário já existe nos perfis, atualizar também
-    try {
-      const perfis = await sbFetch(`perfis?email=eq.${encodeURIComponent(email)}`);
-      if (perfis.length) {
-        await sbFetch(`perfis?id=eq.${perfis[0].id}`, {
-          method: 'PATCH', prefer: 'return=minimal',
-          body: JSON.stringify({ acesso_doado: true, doacao_expira_em: expira, ativo: true })
-        });
+    // Buscar perfil pelo email usando service key para bypass RLS
+    const resPerfil = await fetch(`${SUPA_URL}/rest/v1/perfis?email=eq.${encodeURIComponent(email)}`, {
+      headers: {
+        'apikey': 'sb_secret_fdNAGdaPDmGTIC1mWA0IBw_TgUA8dzh',
+        'Authorization': 'Bearer sb_secret_fdNAGdaPDmGTIC1mWA0IBw_TgUA8dzh',
+        'Content-Type': 'application/json'
       }
-    } catch(e) { /* usuário ainda não cadastrado, tudo bem */ }
-
+    });
+    const perfis = await resPerfil.json();
+    if (!perfis.length) { showMsg('doacao-msg','error','Usuário não encontrado.'); setLoading(false); return; }
+    const perfil = perfis[0];
+    const expira = expDias > 0 ? new Date(Date.now() + expDias*24*60*60*1000).toISOString() : null;
+    await sbFetch(`perfis?id=eq.${perfil.id}`, {
+      method: 'PATCH', prefer: 'return=minimal',
+      body: JSON.stringify({ acesso_doado: true, doacao_expira_em: expira, ativo: true })
+    });
     showMsg('doacao-msg','success',`✅ Acesso doado para ${email}${expira ? ' até ' + new Date(expira).toLocaleDateString('pt-BR') : ' por prazo indeterminado'}!`);
     document.getElementById('doacao-email').value = '';
     carregarAdminData();
@@ -1944,28 +1887,6 @@ function copiarCodigo() {
 
 async function carregarAdminData() {
   try {
-    // Acessos doados
-    try {
-      const acessos = await sbFetch('acessos_doados?order=criado_em.desc');
-      const lad = document.getElementById('lista-acessos-doados');
-      if (lad) {
-        if (!acessos || !acessos.length) {
-          lad.innerHTML = '<div class="empty">Nenhum acesso doado ainda.</div>';
-        } else {
-          lad.innerHTML = `<table class="admin-table">
-            <thead><tr><th>E-mail</th><th>Status</th><th>Expira em</th><th>Doado por</th><th>Ação</th></tr></thead>
-            <tbody>` + acessos.map(a => `
-            <tr>
-              <td>${a.email}</td>
-              <td><span class="status-pill ${a.ativo ? 'active' : 'inactive'}">${a.ativo ? 'Ativo' : 'Revogado'}</span></td>
-              <td style="color:var(--text2)">${a.expira_em ? new Date(a.expira_em).toLocaleDateString('pt-BR') : 'Sem limite'}</td>
-              <td style="color:var(--text2)">${a.doado_por || '—'}</td>
-              <td>${a.ativo ? `<button class="btn-sm red" onclick="revogarAcessoEmail('${a.email}')">❌ Revogar</button>` : '—'}</td>
-            </tr>`).join('') + '</tbody></table>';
-        }
-      }
-    } catch(e) { console.error('Erro acessos doados:', e); }
-
     // Convites
     const convites = await sbFetch('convites?order=criado_em.desc');
     const lc = document.getElementById('lista-convites');
@@ -2024,29 +1945,6 @@ async function carregarAdminData() {
   }
 }
 
-async function revogarAcessoEmail(email) {
-  if (!confirm(`Deseja revogar o acesso de "${email}"?`)) return;
-  setLoading(true);
-  try {
-    await sbFetch(`acessos_doados?email=eq.${encodeURIComponent(email)}`, {
-      method: 'PATCH', prefer: 'return=minimal',
-      body: JSON.stringify({ ativo: false })
-    });
-    // Revogar também nos perfis se existir
-    try {
-      const perfis = await sbFetch(`perfis?email=eq.${encodeURIComponent(email)}`);
-      if (perfis.length) {
-        await sbFetch(`perfis?id=eq.${perfis[0].id}`, {
-          method: 'PATCH', prefer: 'return=minimal',
-          body: JSON.stringify({ acesso_doado: false, doacao_expira_em: null, ativo: false })
-        });
-      }
-    } catch(e) {}
-    carregarAdminData();
-  } catch(e) { alert('Erro: ' + e.message); }
-  setLoading(false);
-}
-
 async function revogarConvite(id) {
   await sbFetch(`convites?id=eq.${id}`, { method: 'PATCH', prefer: 'return=minimal', body: JSON.stringify({ ativo: false }) });
   carregarAdminData();
@@ -2084,23 +1982,18 @@ async function excluirUsuario(id, nome) {
   setLoading(true);
   try {
     // Remover dados do usuário
-    await sbFetch(`ganhos?user_id=eq.${id}`,     { method: 'DELETE', prefer: 'return=minimal' });
-    await sbFetch(`gastos?user_id=eq.${id}`,     { method: 'DELETE', prefer: 'return=minimal' });
-    await sbFetch(`categorias?user_id=eq.${id}`, { method: 'DELETE', prefer: 'return=minimal' });
-    await sbFetch(`perfis?id=eq.${id}`,          { method: 'DELETE', prefer: 'return=minimal' });
-    // Remover do Auth via Edge Function (chave secreta fica segura no servidor)
-    const res = await fetch(`${SUPA_URL}/functions/v1/delete-user`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + authToken,
-        'apikey': SUPA_KEY
-      },
-      body: JSON.stringify({ user_id: id, requesting_email: currentUser.email })
+    await sbFetch(`ganhos?user_id=eq.${id}`,        { method: 'DELETE', prefer: 'return=minimal' });
+    await sbFetch(`gastos?user_id=eq.${id}`,        { method: 'DELETE', prefer: 'return=minimal' });
+    await sbFetch(`categorias?user_id=eq.${id}`,    { method: 'DELETE', prefer: 'return=minimal' });
+    await sbFetch(`investimentos?user_id=eq.${id}`, { method: 'DELETE', prefer: 'return=minimal' });
+    await sbFetch(`metas?user_id=eq.${id}`,         { method: 'DELETE', prefer: 'return=minimal' });
+    // Desativar perfil (sem edge function)
+    await sbFetch(`perfis?id=eq.${id}`, {
+      method: 'PATCH', prefer: 'return=minimal',
+      body: JSON.stringify({ ativo: false, nome: '[EXCLUÍDO]', email: `excluido_${id}@deleted` })
     });
-    const result = await res.json();
-    if (!res.ok) throw new Error(result.error || 'Erro ao excluir do Auth');
     carregarAdminData();
+    alert('✅ Usuário excluído com sucesso!');
   } catch(e) { alert('Erro ao excluir: ' + e.message); }
   setLoading(false);
 }
