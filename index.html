@@ -1354,8 +1354,11 @@ async function excluirMeta(id) {
 
 function calcularProgressoMeta(meta) {
   if (meta.tipo === 'economia') {
-    // Saldo real = ganhos - gastos
-    return Math.max(0, totalG() - totalGS());
+    // Progresso = Guardar + Gastar (o que o usuário pode direcionar para a meta)
+    const s = Math.max(0, totalG() - totalGS());
+    const pGuardar = distGuardar / 100;
+    const pGastar  = distGastar  / 100;
+    return s * (pGuardar + pGastar);
   } else {
     const gastosCat = meta.categoria
       ? ud.gastos.filter(g => g.cat === meta.categoria)
@@ -1467,8 +1470,56 @@ function renderMetas() {
 
     const tempo = calcularTempoMedio(meta, progresso);
 
-    // Calcular valor a guardar por dia para atingir no prazo
-    let porDiaEconomiaHTML = '';
+    // Simulação inteligente para metas de economia
+    let simulacaoHTML = '';
+    if (isEcon && !concluida) {
+      const s = Math.max(0, totalG() - totalGS());
+      const pGuardar = distGuardar / 100;
+      const pGastar  = distGastar  / 100;
+      const mediaGanhosMensal = totalG() / Math.max(1, new Set(ud.ganhos.map(g => new Date(g.data).toISOString().slice(0,7))).size);
+      const mediaGastosMensal = totalGS() / Math.max(1, new Set(ud.gastos.map(g => new Date(g.data).toISOString().slice(0,7))).size);
+
+      // Cenário atual
+      const poupancaAtual = (mediaGanhosMensal - mediaGastosMensal) * (pGuardar + pGastar);
+      const mesesAtual = poupancaAtual > 0 ? Math.ceil(faltando / poupancaAtual) : null;
+
+      // Cenário sem gastar nada (100% do % gastar vai para a meta)
+      const poupancaSemGastar = mediaGanhosMensal * (pGuardar + pGastar);
+      const mesesSemGastar = poupancaSemGastar > 0 ? Math.ceil(faltando / poupancaSemGastar) : null;
+
+      // Cenário moderado (gastar 50% do % gastar)
+      const mediaGastosModerado = mediaGanhosMensal * (pGastar * 0.5);
+      const poupancaModerada = (mediaGanhosMensal - mediaGastosMensal * (1 - pGastar * 0.5)) * (pGuardar + pGastar * 0.5);
+      const mesesModerado = poupancaModerada > 0 ? Math.ceil(faltando / poupancaModerada) : null;
+
+      const fmtMeses = (m) => {
+        if (!m || m <= 0) return '🎉 Meta atingida!';
+        if (m < 12) return `${m} mes${m>1?'es':''}`;
+        const a = Math.floor(m/12), r = m%12;
+        return `${a} ano${a>1?'s':''}${r>0?' e '+r+' mes'+( r>1?'es':''):''}`;
+      };
+
+      if (mesesAtual || mesesSemGastar) {
+        simulacaoHTML = `
+        <div style="margin-top:14px;background:var(--bg3);border-radius:var(--radius-sm);padding:12px;border:1px solid var(--border);">
+          <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">💡 Simulação inteligente</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            ${mesesAtual ? `<div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;">
+              <span style="color:var(--text2);">📊 No ritmo atual</span>
+              <span style="font-weight:600;color:#4A9EFF;">${fmtMeses(mesesAtual)}</span>
+            </div>` : ''}
+            ${mesesModerado && mesesModerado < (mesesAtual||9999) ? `<div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;">
+              <span style="color:var(--text2);">✂️ Moderando gastos 50%</span>
+              <span style="font-weight:600;color:#FFB830;">${fmtMeses(mesesModerado)} <span style="font-size:11px;color:var(--green);">(${mesesAtual&&mesesModerado<mesesAtual?'−'+(mesesAtual-mesesModerado)+' mes'+(mesesAtual-mesesModerado>1?'es':''):''})</span></span>
+            </div>` : ''}
+            ${mesesSemGastar && mesesSemGastar < (mesesAtual||9999) ? `<div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;">
+              <span style="color:var(--text2);">🚫 Sem gastar nada extra</span>
+              <span style="font-weight:600;color:#00C48C;">${fmtMeses(mesesSemGastar)} <span style="font-size:11px;color:var(--green);">(${mesesAtual&&mesesSemGastar<mesesAtual?'−'+(mesesAtual-mesesSemGastar)+' mes'+(mesesAtual-mesesSemGastar>1?'es':''):''})</span></span>
+            </div>` : ''}
+          </div>
+        </div>`;
+      }
+    }
     if (isEcon && !concluida && meta.prazo) {
       const diasRestantes = Math.ceil((new Date(meta.prazo) - new Date()) / (1000*60*60*24));
       if (diasRestantes > 0) {
@@ -1506,6 +1557,7 @@ function renderMetas() {
         ${prazoHTML}
         ${tempo && isEcon && !concluida && tempo.meses > 0 ? `<span style="color:#8B7CF6">⏱ ${tempo.texto} para concluir</span>` : ''}
       </div>
+      ${simulacaoHTML}
     </div>`;
   });
 
