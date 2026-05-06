@@ -855,11 +855,31 @@
   </script>
 
 <script>
+// ── SUPABASE ───────────────────────────────────────────
+const SUPA_URL = 'https://bevcgzvqqnubvoivcbva.supabase.co';
+const SUPA_KEY = 'sb_publishable_gBDJMbhgwchvhifQUCiNSw_MS--CGGY';
+
+async function sbFetch(path, opts = {}) {
+  const res = await fetch(SUPA_URL + '/rest/v1/' + path, {
+    headers: {
+      'apikey': SUPA_KEY,
+      'Authorization': 'Bearer ' + SUPA_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': opts.prefer || 'return=representation',
+      ...opts.headers
+    },
+    ...opts
+  });
+  if (!res.ok) { const e = await res.text(); throw new Error(e); }
+  const text = await res.text();
+  return text ? JSON.parse(text) : [];
+}
+
 // ── USUÁRIOS ──────────────────────────────────────────
 const USERS = [
-  { username: 'Lucas',    password: '019100', secQ: 'Qual o nome do seu pet ou primeiro animal de estimação?', secA: 'lucas' },
-  { username: 'Quézia',   password: '1305',   secQ: 'Qual a cidade onde você nasceu?',                         secA: 'quezia' },
-  { username: 'Giovanna', password: '0807',   secQ: 'Qual o nome da sua mãe?',                                 secA: 'giovanna' }
+  { username: 'Lucas',    password: '019100' },
+  { username: 'Quézia',   password: '1305'   },
+  { username: 'Giovanna', password: '0807'   }
 ];
 
 // Senhas ficam no localStorage para persistir redefinições
@@ -874,8 +894,6 @@ let currentUser = null;
 let selCatG = null, selCatGS = null;
 let chG, chGS, chD;
 
-function storageKey(user) { return 'finapp_' + user; }
-
 function defaultData() {
   return {
     ganhos: [], gastos: [],
@@ -886,22 +904,49 @@ function defaultData() {
 
 let ud = defaultData();
 
-function loadData() {
-  ud = defaultData();
-  try {
-    const raw = localStorage.getItem(storageKey(currentUser));
-    if (raw) {
-      const d = JSON.parse(raw);
-      ud.ganhos = d.ganhos || [];
-      ud.gastos = d.gastos || [];
-      ud.catG   = d.catG   || ud.catG;
-      ud.catGS  = d.catGS  || ud.catGS;
-    }
-  } catch(e) {}
+// Indicador de carregamento
+function setLoading(on) {
+  let el = document.getElementById('loading-overlay');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'loading-overlay';
+    el.style.cssText = 'position:fixed;inset:0;background:rgba(13,15,20,0.7);display:flex;align-items:center;justify-content:center;z-index:9999;font-size:14px;color:#4A9EFF;font-family:Sora,sans-serif;gap:10px;';
+    el.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4A9EFF" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"><animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="0.8s" repeatCount="indefinite"/></path></svg> Carregando...';
+    document.body.appendChild(el);
+  }
+  el.style.display = on ? 'flex' : 'none';
 }
 
-function saveData() {
-  try { localStorage.setItem(storageKey(currentUser), JSON.stringify(ud)); } catch(e) {}
+async function loadData() {
+  ud = defaultData();
+  setLoading(true);
+  try {
+    // Carregar ganhos
+    const ganhos = await sbFetch(`ganhos?usuario=eq.${encodeURIComponent(currentUser)}&order=data.desc`);
+    ud.ganhos = ganhos.map(r => ({
+      id: r.id, valor: parseFloat(r.valor),
+      data: r.data ? r.data.slice(0,16) : '',
+      desc: r.descricao, cat: r.categoria
+    }));
+
+    // Carregar gastos
+    const gastos = await sbFetch(`gastos?usuario=eq.${encodeURIComponent(currentUser)}&order=data.desc`);
+    ud.gastos = gastos.map(r => ({
+      id: r.id, valor: parseFloat(r.valor),
+      data: r.data ? r.data.slice(0,16) : '',
+      desc: r.descricao, cat: r.categoria
+    }));
+
+    // Carregar categorias
+    const cats = await sbFetch(`categorias?usuario=eq.${encodeURIComponent(currentUser)}`);
+    const catsG  = cats.filter(c => c.tipo === 'g').map(c => c.nome);
+    const catsGS = cats.filter(c => c.tipo === 'gs').map(c => c.nome);
+    if (catsG.length)  ud.catG  = catsG;
+    if (catsGS.length) ud.catGS = catsGS;
+  } catch(e) {
+    console.error('Erro ao carregar dados:', e);
+  }
+  setLoading(false);
 }
 
 // ── LOGIN ─────────────────────────────────────────────
@@ -921,7 +966,7 @@ function doLogin() {
   selCatG = null; selCatGS = null;
   document.querySelectorAll('.nav-item').forEach((b,i) => b.classList.toggle('active', i===0));
   document.querySelectorAll('.page').forEach((p,i)     => p.classList.toggle('active', i===0));
-  setNow(); loadData(); renderAll();
+  setNow(); loadData().then(() => renderAll());
 }
 
 function doLogout() {
@@ -1038,11 +1083,18 @@ function addCat(tipo) {
   const val = el.value.trim(); if (!val) return;
   if (tipo==='g') { if (!ud.catG.includes(val))  ud.catG.push(val);  selCatG  = val; }
   else            { if (!ud.catGS.includes(val)) ud.catGS.push(val); selCatGS = val; }
-  el.value = ''; saveData(); renderTags(tipo);
+  el.value = '';
+  // Salvar categoria no Supabase
+  sbFetch('categorias', {
+    method: 'POST',
+    prefer: 'return=minimal',
+    body: JSON.stringify({ usuario: currentUser, tipo, nome: val })
+  }).catch(e => console.error('Erro ao salvar categoria:', e));
+  renderTags(tipo);
 }
 
 // ── SALVAR / DELETAR ──────────────────────────────────
-function salvar(tipo) {
+async function salvar(tipo) {
   const isG   = tipo === 'g';
   const valEl = document.getElementById(tipo+'-val');
   const dtEl  = document.getElementById(tipo+'-dt');
@@ -1050,16 +1102,43 @@ function salvar(tipo) {
   const valor = parseFloat(valEl.value);
   if (!valor || valor <= 0) { valEl.focus(); return; }
   const cat   = isG ? selCatG : selCatGS;
-  const entry = { id: Date.now(), valor, data: dtEl.value || new Date().toISOString().slice(0,16), desc: dsEl.value.trim() || (isG?'Ganho':'Gasto'), cat: cat || 'Sem categoria' };
-  if (isG) ud.ganhos.unshift(entry); else ud.gastos.unshift(entry);
-  valEl.value = ''; dsEl.value = '';
-  if (isG) selCatG = null; else selCatGS = null;
-  setNow(); saveData(); renderAll();
+  const tabela = isG ? 'ganhos' : 'gastos';
+  const payload = {
+    usuario: currentUser,
+    valor,
+    data: dtEl.value ? new Date(dtEl.value).toISOString() : new Date().toISOString(),
+    descricao: dsEl.value.trim() || (isG ? 'Ganho' : 'Gasto'),
+    categoria: cat || 'Sem categoria'
+  };
+  setLoading(true);
+  try {
+    const rows = await sbFetch(tabela, { method: 'POST', body: JSON.stringify(payload) });
+    const r = rows[0];
+    const entry = { id: r.id, valor: parseFloat(r.valor), data: r.data ? r.data.slice(0,16) : '', desc: r.descricao, cat: r.categoria };
+    if (isG) ud.ganhos.unshift(entry); else ud.gastos.unshift(entry);
+    valEl.value = ''; dsEl.value = '';
+    if (isG) selCatG = null; else selCatGS = null;
+    setNow(); renderAll();
+  } catch(e) {
+    alert('Erro ao salvar: ' + e.message);
+  }
+  setLoading(false);
 }
-function deletar(tipo, id) {
-  if (tipo==='g') ud.ganhos = ud.ganhos.filter(x => x.id !== id);
-  else            ud.gastos = ud.gastos.filter(x => x.id !== id);
-  saveData(); renderAll();
+
+async function deletar(tipo, id) {
+  const tabela = tipo === 'g' ? 'ganhos' : 'gastos';
+  setLoading(true);
+  try {
+    await sbFetch(`${tabela}?id=eq.${id}&usuario=eq.${encodeURIComponent(currentUser)}`, {
+      method: 'DELETE', prefer: 'return=minimal'
+    });
+    if (tipo==='g') ud.ganhos = ud.ganhos.filter(x => x.id !== id);
+    else            ud.gastos = ud.gastos.filter(x => x.id !== id);
+    renderAll();
+  } catch(e) {
+    alert('Erro ao deletar: ' + e.message);
+  }
+  setLoading(false);
 }
 
 // ── LISTAS ────────────────────────────────────────────
