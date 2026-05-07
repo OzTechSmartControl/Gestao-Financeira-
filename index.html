@@ -709,23 +709,8 @@
       <div class="field"><label>E-mail</label><input type="email" id="inp-user" placeholder="seu@email.com" autocomplete="email"></div>
       <div class="field"><label>Senha</label><input type="password" id="inp-pass" placeholder="Digite sua senha" autocomplete="current-password"></div>
       <button class="btn-login" onclick="doLogin()">Entrar</button>
-      <button class="btn-forgot" onclick="goConvite()" style="background:rgba(0,196,140,0.1);border-color:rgba(0,196,140,0.3);color:var(--green);">🎁 Tenho um convite</button>
       <button class="btn-forgot" onclick="goReset()">Alterar senha</button>
       <div class="register-link">Não tem conta? <a onclick="goPlanos()">Assine agora</a></div>
-    </div>
-
-    <!-- CADASTRO COM CONVITE -->
-    <div class="reset-step" id="step-convite">
-      <button class="reset-back" onclick="goLogin()">← Voltar ao login</button>
-      <div class="reset-title">🎁 Criar conta com convite</div>
-      <div class="reset-sub">Informe o código do convite recebido e crie sua conta.</div>
-      <div class="login-msg" id="convite-msg"></div>
-      <div class="field"><label>Código do convite</label><input type="text" id="convite-codigo" placeholder="OZ-XXXX-XXXX" style="text-transform:uppercase;letter-spacing:0.1em;font-family:'JetBrains Mono',monospace;"></div>
-      <div class="field"><label>Seu nome</label><input type="text" id="convite-nome" placeholder="Como quer ser chamado"></div>
-      <div class="field"><label>E-mail</label><input type="email" id="convite-email" placeholder="seu@email.com"></div>
-      <div class="field"><label>Senha</label><input type="password" id="convite-senha" placeholder="Mínimo 6 caracteres"></div>
-      <div class="field"><label>Confirmar senha</label><input type="password" id="convite-senha2" placeholder="Repita a senha"></div>
-      <button class="btn-login" onclick="cadastrarComConvite()">Criar minha conta</button>
     </div>
 
     <!-- TELA DE PLANOS PÚBLICA -->
@@ -1277,14 +1262,57 @@ async function doLogin() {
 
   // Verificar se usuário está ativo
   try {
-    const perfil = await sbFetch(`perfis?id=eq.${currentUser.id}&select=ativo`);
-    if (!perfil.length || perfil[0].ativo === false) {
+    const perfil = await sbFetch(`perfis?id=eq.${currentUser.id}&select=ativo,nome`);
+
+    if (!perfil.length) {
+      // Perfil não existe — verificar se tem convite ou acesso doado válido
+      const emailUser = currentUser.email.toLowerCase();
+
+      // Verificar acessos_doados
+      const acessoDoado = await sbFetch(`acessos_doados?email=eq.${encodeURIComponent(emailUser)}&ativo=eq.true`);
+      // Verificar convites pelo destinatário (email)
+      const conviteEmail = await sbFetch(`convites?destinatario=eq.${encodeURIComponent(emailUser)}&ativo=eq.false`);
+
+      const temAcesso = acessoDoado && acessoDoado.length > 0;
+      const temConvite = conviteEmail && conviteEmail.length > 0;
+
+      if (temAcesso || temConvite) {
+        // Criar perfil automaticamente
+        const ad = temAcesso ? acessoDoado[0] : null;
+        const expirou = ad && ad.expira_em && new Date(ad.expira_em) < new Date();
+        if (expirou) {
+          authToken = null; currentUser = null;
+          const el = document.getElementById('login-error');
+          el.textContent = 'Seu acesso doado expirou. Entre em contato com o administrador.';
+          el.style.display = 'block';
+          setLoading(false); return;
+        }
+        const nome = currentUser.user_metadata?.nome || emailUser.split('@')[0];
+        await sbFetch('perfis', {
+          method: 'POST', prefer: 'return=minimal',
+          body: JSON.stringify({
+            id: currentUser.id,
+            nome,
+            email: emailUser,
+            ativo: true,
+            acesso_doado: temAcesso,
+            doacao_expira_em: ad ? ad.expira_em : null
+          })
+        });
+        // Perfil criado, continuar login normalmente
+      } else {
+        authToken = null; currentUser = null;
+        const el = document.getElementById('login-error');
+        el.textContent = 'Sua conta não está autorizada. Entre em contato com o administrador.';
+        el.style.display = 'block';
+        setLoading(false); return;
+      }
+    } else if (perfil[0].ativo === false) {
       authToken = null; currentUser = null;
       const el = document.getElementById('login-error');
       el.textContent = 'Sua conta foi desativada ou excluída. Entre em contato com o administrador.';
       el.style.display = 'block';
-      setLoading(false);
-      return;
+      setLoading(false); return;
     }
   } catch(e) { console.error('Erro ao verificar perfil:', e); }
 
@@ -1331,7 +1359,7 @@ function doLogout() {
 
 // ── NAVEGAÇÃO LOGIN ────────────────────────────────────
 function showStep(id) {
-  ['step-login','step-reset2','step-planos','step-convite'].forEach(s => {
+  ['step-login','step-reset2','step-planos'].forEach(s => {
     document.getElementById(s).classList.toggle('active', s === id);
   });
   document.getElementById('login-error').style.display = 'none';
@@ -1342,67 +1370,6 @@ function goReset()  {
   showMsg('reset2-msg','',''); showStep('step-reset2');
 }
 function goPlanos() { showStep('step-planos'); }
-function goConvite() {
-  ['convite-codigo','convite-nome','convite-email','convite-senha','convite-senha2'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
-  showMsg('convite-msg','','');
-  showStep('step-convite');
-}
-
-async function cadastrarComConvite() {
-  const codigo = document.getElementById('convite-codigo').value.trim().toUpperCase();
-  const nome   = document.getElementById('convite-nome').value.trim();
-  const email  = document.getElementById('convite-email').value.trim().toLowerCase();
-  const senha  = document.getElementById('convite-senha').value;
-  const senha2 = document.getElementById('convite-senha2').value;
-
-  if (!codigo || !nome || !email || !senha) { showMsg('convite-msg','error','Preencha todos os campos.'); return; }
-  if (senha !== senha2) { showMsg('convite-msg','error','As senhas não coincidem.'); return; }
-  if (senha.length < 6) { showMsg('convite-msg','error','Senha deve ter no mínimo 6 caracteres.'); return; }
-
-  setLoading(true);
-  try {
-    // Verificar se o convite existe e está disponível
-    const convites = await fetch(`${SUPA_URL}/rest/v1/convites?codigo=eq.${encodeURIComponent(codigo)}&ativo=eq.true`, {
-      headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY }
-    }).then(r => r.json());
-
-    // Verificar também na tabela acessos_doados
-    const acessoDoado = await fetch(`${SUPA_URL}/rest/v1/acessos_doados?email=eq.${encodeURIComponent(email)}&ativo=eq.true`, {
-      headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY }
-    }).then(r => r.json());
-
-    const temConvite = convites && convites.length > 0;
-    const temAcesso  = acessoDoado && acessoDoado.length > 0;
-
-    if (!temConvite && !temAcesso) {
-      showMsg('convite-msg','error','Convite inválido, já utilizado ou não autorizado para este e-mail.');
-      setLoading(false); return;
-    }
-
-    // Verificar se convite expirou
-    if (temConvite && convites[0].expira_em && new Date(convites[0].expira_em) < new Date()) {
-      showMsg('convite-msg','error','Este convite expirou.');
-      setLoading(false); return;
-    }
-
-    // Criar conta no Supabase Auth
-    const reg = await sbAuth('signup', { email, password: senha, options: { data: { nome } } });
-    if (reg.error) { showMsg('convite-msg','error', reg.error.message || 'Erro ao criar conta.'); setLoading(false); return; }
-
-    // Marcar convite como usado
-    if (temConvite) {
-      await fetch(`${SUPA_URL}/rest/v1/convites?id=eq.${convites[0].id}`, {
-        method: 'PATCH',
-        headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
-        body: JSON.stringify({ ativo: false })
-      });
-    }
-
-    showMsg('convite-msg','success','✅ Conta criada! Verifique seu e-mail para confirmar e depois faça login.');
-    setTimeout(() => { document.getElementById('inp-user').value = email; goLogin(); }, 3000);
-  } catch(e) { showMsg('convite-msg','error','Erro: ' + e.message); }
-  setLoading(false);
-}
 
 async function irParaPagamento(plano) {
   setLoading(true);
