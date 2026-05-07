@@ -709,10 +709,21 @@
       <div class="field"><label>E-mail</label><input type="email" id="inp-user" placeholder="seu@email.com" autocomplete="email"></div>
       <div class="field"><label>Senha</label><input type="password" id="inp-pass" placeholder="Digite sua senha" autocomplete="current-password"></div>
       <button class="btn-login" onclick="doLogin()">Entrar</button>
-      <div style="text-align:center;font-size:11px;color:var(--text3);margin-bottom:8px;">Assinantes e usuários com acesso doado</div>
+      <div style="text-align:center;font-size:11px;color:var(--text3);margin-bottom:8px;">Disponível apenas para assinantes</div>
       <button class="btn-forgot" style="background:rgba(74,158,255,0.12);color:var(--blue);border-color:rgba(74,158,255,0.3);" onclick="goDemo()">🔍 Teste gratuito</button>
-      <button class="btn-forgot" onclick="goReset()">Alterar senha</button>
+      <button class="btn-forgot" onclick="goSenha()">🔑 Alterar ou Redefinir Senha</button>
       <button class="btn-forgot" style="background:rgba(0,196,140,0.1);border-color:rgba(0,196,140,0.3);color:var(--green);" onclick="goPlanos()">💳 Assinar plano</button>
+    </div>
+
+    <!-- OPÇÕES DE SENHA -->
+    <div class="reset-step" id="step-senha">
+      <button class="reset-back" onclick="goLogin()">← Voltar ao login</button>
+      <div class="reset-title">Senha</div>
+      <div class="reset-sub">O que deseja fazer?</div>
+      <button class="btn-login" style="margin-bottom:12px;" onclick="goReset()">🔑 Alterar senha</button>
+      <div style="text-align:center;font-size:12px;color:var(--text3);margin-bottom:12px;">Sei minha senha atual e quero trocar</div>
+      <button class="btn-login" style="background:rgba(74,158,255,0.15);color:var(--blue);border:1px solid rgba(74,158,255,0.3);" onclick="goEsqueciSenha()">📧 Esqueci minha senha</button>
+      <div style="text-align:center;font-size:12px;color:var(--text3);margin-top:8px;">Receberei um link de redefinição no e-mail</div>
     </div>
 
     <!-- TELA DE PLANOS PÚBLICA -->
@@ -746,7 +757,7 @@
 
     <!-- ALTERAR SENHA -->
     <div class="reset-step" id="step-reset2">
-      <button class="reset-back" onclick="goLogin()">← Voltar ao login</button>
+      <button class="reset-back" onclick="goSenha()">← Voltar</button>
       <div class="reset-title">Alterar senha</div>
       <div class="reset-sub">Digite seu e-mail e sua senha atual para definir uma nova.</div>
       <div class="login-msg" id="reset2-msg"></div>
@@ -755,17 +766,16 @@
       <div class="field"><label>Nova senha</label><input type="password" id="new-pass1" placeholder="Mínimo 6 caracteres"></div>
       <div class="field"><label>Confirmar nova senha</label><input type="password" id="new-pass2" placeholder="Repita a nova senha"></div>
       <button class="btn-login" onclick="saveNewPass()">Salvar nova senha</button>
-      <div style="text-align:center;margin-top:12px;"><a onclick="goEsqueciSenha()" style="font-size:12px;color:var(--blue);cursor:pointer;text-decoration:underline;">Esqueci minha senha</a></div>
     </div>
 
     <!-- ESQUECI MINHA SENHA -->
     <div class="reset-step" id="step-esqueci">
-      <button class="reset-back" onclick="goLogin()">← Voltar ao login</button>
-      <div class="reset-title">Recuperar senha</div>
+      <button class="reset-back" onclick="goSenha()">← Voltar</button>
+      <div class="reset-title">Redefinir senha</div>
       <div class="reset-sub">Informe seu e-mail e enviaremos um link para redefinir sua senha.</div>
       <div class="login-msg" id="esqueci-msg"></div>
       <div class="field"><label>E-mail</label><input type="email" id="esqueci-email" placeholder="seu@email.com"></div>
-      <button class="btn-login" onclick="enviarRecuperacao()">Enviar link de recuperação</button>
+      <button class="btn-login" onclick="enviarRecuperacao()">📧 Enviar link de redefinição</button>
     </div>
 
     <div style="margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--border);text-align:center;">
@@ -1127,29 +1137,6 @@
         </div>
       </div>
 
-      <!-- Doação de acesso -->
-      <div class="card">
-        <div class="card-title">Doar acesso</div>
-        <div class="gen-convite-wrap">
-          <div class="field" style="flex:2;">
-            <label class="f-label">Usuário (e-mail)</label>
-            <input class="f-input" type="email" id="doacao-email" placeholder="email@exemplo.com">
-          </div>
-          <div class="field">
-            <label class="f-label">Expiração</label>
-            <select class="f-input" id="doacao-expira">
-              <option value="0">Indeterminado</option>
-              <option value="30">30 dias</option>
-              <option value="90">90 dias</option>
-              <option value="180">180 dias</option>
-              <option value="365">1 ano</option>
-            </select>
-          </div>
-          <button class="btn-submit" style="width:auto;padding:10px 20px;align-self:flex-end;background:#FFB830;color:#000;font-weight:600;" onclick="doarAcesso()">🎁 Doar acesso</button>
-        </div>
-        <div class="login-msg" id="doacao-msg"></div>
-      </div>
-
       <!-- Lista de convites -->
       <div class="card">
         <div class="card-title">Convites gerados</div>
@@ -1329,23 +1316,22 @@ function doLogout() {
 
 // ── NAVEGAÇÃO LOGIN ────────────────────────────────────
 function showStep(id) {
-  ['step-login','step-reset2','step-planos','step-esqueci'].forEach(s => {
+  ['step-login','step-reset2','step-planos','step-senha','step-esqueci'].forEach(s => {
     document.getElementById(s).classList.toggle('active', s === id);
   });
   document.getElementById('login-error').style.display = 'none';
 }
 function goLogin()  { showStep('step-login'); }
-function goReset()  {
-  ['reset-email','reset-cur-pass','new-pass1','new-pass2'].forEach(id => document.getElementById(id).value = '');
-  showMsg('reset2-msg','',''); showStep('step-reset2');
+function goSenha() {
+  showMsg('reset2-msg','','');
+  showMsg('esqueci-msg','','');
+  showStep('step-senha');
 }
-function goPlanos() { showStep('step-planos'); }
 function goEsqueciSenha() {
-  document.getElementById('esqueci-email').value = document.getElementById('reset-email').value || '';
+  document.getElementById('esqueci-email').value = '';
   showMsg('esqueci-msg','','');
   showStep('step-esqueci');
 }
-
 async function enviarRecuperacao() {
   const email = document.getElementById('esqueci-email').value.trim().toLowerCase();
   if (!email) { showMsg('esqueci-msg','error','Informe seu e-mail.'); return; }
@@ -1357,8 +1343,8 @@ async function enviarRecuperacao() {
       body: JSON.stringify({ email })
     });
     if (res.ok) {
-      showMsg('esqueci-msg','success','✅ Link de recuperação enviado! Verifique seu e-mail.');
-      setTimeout(() => goLogin(), 3000);
+      showMsg('esqueci-msg','success','✅ Link enviado! Verifique seu e-mail.');
+      setTimeout(() => goLogin(), 4000);
     } else {
       const err = await res.json();
       showMsg('esqueci-msg','error', err.msg || err.message || 'Erro ao enviar e-mail.');
@@ -1366,6 +1352,11 @@ async function enviarRecuperacao() {
   } catch(e) { showMsg('esqueci-msg','error','Erro: ' + e.message); }
   setLoading(false);
 }
+function goReset()  {
+  ['reset-email','reset-cur-pass','new-pass1','new-pass2'].forEach(id => document.getElementById(id).value = '');
+  showMsg('reset2-msg','',''); showStep('step-reset2');
+}
+function goPlanos() { showStep('step-planos'); }
 
 async function irParaPagamento(plano) {
   setLoading(true);
