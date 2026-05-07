@@ -930,7 +930,7 @@
       <!-- Perfis e personalização -->
       <div class="card" style="margin-top:1rem;">
         <div class="card-title">Perfil de distribuição</div>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.25rem;" id="perfis-grid">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.25rem;" id="perfis-grid">
           <div class="perfil-btn" onclick="aplicarPerfil('equilibrado')" id="perfil-equilibrado">
             <div class="perfil-icon">⚖️</div>
             <div class="perfil-nome">Equilibrado</div>
@@ -941,14 +941,9 @@
             <div class="perfil-nome">Conservador</div>
             <div class="perfil-pcts">70 · 30</div>
           </div>
-          <div class="perfil-btn" onclick="aplicarPerfil('investidor')" id="perfil-investidor">
-            <div class="perfil-icon">📈</div>
-            <div class="perfil-nome">Investidor</div>
-            <div class="perfil-pcts">60 · 40</div>
-          </div>
           <div class="perfil-btn" onclick="aplicarPerfil('confortavel')" id="perfil-confortavel">
             <div class="perfil-icon">😊</div>
-            <div class="perfil-nome">Confortável</div>
+            <div class="perfil-nome">Gastador</div>
             <div class="perfil-pcts">30 · 70</div>
           </div>
         </div>
@@ -1369,21 +1364,6 @@ async function resgatarAcesso() {
     if(acesso[0].expira_em&&new Date(acesso[0].expira_em)<new Date()){showMsg('resgatar-msg','error','O acesso doado expirou.');setLoading(false);return;}
     const reg=await sbAuth('signup',{email,password:senha,options:{data:{nome}}});
     if(reg.error){showMsg('resgatar-msg','error',reg.error.message||'Erro ao criar conta.');setLoading(false);return;}
-    // Criar perfil com o nome correto usando service key
-    if(reg.user && reg.user.id) {
-      try {
-        await fetch(`${SUPA_URL}/rest/v1/perfis`, {
-          method: 'POST',
-          headers: {
-            'apikey': 'sb_secret_fdNAGdaPDmGTIC1mWA0IBw_TgUA8dzh',
-            'Authorization': 'Bearer sb_secret_fdNAGdaPDmGTIC1mWA0IBw_TgUA8dzh',
-            'Content-Type': 'application/json',
-            'Prefer': 'return=minimal,resolution=ignore-duplicates'
-          },
-          body: JSON.stringify({ id: reg.user.id, nome, email, ativo: true, acesso_doado: true })
-        });
-      } catch(e2) { console.log('Perfil será criado no login'); }
-    }
     showMsg('resgatar-msg','success','✅ Conta criada! Faça login com seu e-mail e senha.');
     setTimeout(()=>{document.getElementById('inp-user').value=email;goLogin();},2500);
   } catch(e){showMsg('resgatar-msg','error','Erro: '+e.message);}
@@ -2351,7 +2331,6 @@ let distGuardar = 50, distInvestir = 25, distGastar = 25;
 const PERFIS = {
   equilibrado: { guardar: 50, gastar: 50 },
   conservador: { guardar: 70, gastar: 30 },
-  investidor:  { guardar: 60, gastar: 40 },
   confortavel: { guardar: 30, gastar: 70 }
 };
 
