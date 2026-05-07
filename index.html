@@ -706,11 +706,14 @@
     </div>
     <div class="login-error" id="login-error">E-mail ou senha incorretos.</div>
     <div class="reset-step active" id="step-login">
+      <button class="btn-login" style="background:rgba(74,158,255,0.12);color:var(--blue);border:1px solid rgba(74,158,255,0.3);margin-bottom:8px;" onclick="goDemo()">🔍 Acessar sem login</button>
+      <div style="text-align:center;font-size:11px;color:var(--text3);margin-bottom:12px;">Teste gratuito — dados não são salvos</div>
       <div class="field"><label>E-mail</label><input type="email" id="inp-user" placeholder="seu@email.com" autocomplete="email"></div>
       <div class="field"><label>Senha</label><input type="password" id="inp-pass" placeholder="Digite sua senha" autocomplete="current-password"></div>
       <button class="btn-login" onclick="doLogin()">Entrar</button>
+      <div style="text-align:center;font-size:11px;color:var(--text3);margin:4px 0 12px;">Disponível para assinantes e usuários com acesso doado</div>
       <button class="btn-forgot" onclick="goReset()">Alterar senha</button>
-      <div class="register-link">Não tem conta? <a onclick="goPlanos()">Assine agora</a></div>
+      <button class="btn-forgot" style="background:rgba(0,196,140,0.1);border-color:rgba(0,196,140,0.3);color:var(--green);margin-top:4px;" onclick="goPlanos()">💳 Assinar plano</button>
     </div>
 
     <!-- TELA DE PLANOS PÚBLICA -->
@@ -1086,34 +1089,6 @@
         <div class="page-title">Painel Admin <span class="admin-badge">ADM</span></div>
         <div class="page-sub">Gerencie usuários e convites da plataforma</div>
       </div>
-      <!-- Gerar convite -->
-      <div class="card">
-        <div class="card-title">Gerar novo convite</div>
-        <div class="gen-convite-wrap">
-          <div class="field" style="flex:2;">
-            <label class="f-label">Destinatário (opcional)</label>
-            <input class="f-input" type="text" id="conv-dest" placeholder="Nome ou e-mail de quem vai receber">
-          </div>
-          <div class="field">
-            <label class="f-label">Expira em</label>
-            <select class="f-input" id="conv-expira">
-              <option value="7">7 dias</option>
-              <option value="15">15 dias</option>
-              <option value="30" selected>30 dias</option>
-              <option value="0">Sem expiração</option>
-            </select>
-          </div>
-          <button class="btn-submit green" style="width:auto;padding:10px 20px;align-self:flex-end;" onclick="gerarConvite()">Gerar convite</button>
-        </div>
-        <div id="conv-gerado" style="display:none;">
-          <div class="card-title" style="margin-bottom:8px;">Convite gerado — compartilhe com o usuário:</div>
-          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-            <span class="convite-code" id="conv-code-display" onclick="copiarCodigo()"></span>
-            <button class="btn-sm blue" onclick="copiarCodigo()">📋 Copiar</button>
-          </div>
-        </div>
-      </div>
-
       <!-- Doação de acesso -->
       <div class="card">
         <div class="card-title">Doar acesso</div>
@@ -1137,11 +1112,6 @@
         <div class="login-msg" id="doacao-msg"></div>
       </div>
 
-      <!-- Lista de convites -->
-      <div class="card">
-        <div class="card-title">Convites gerados</div>
-        <div id="lista-convites"><div class="empty">Nenhum convite gerado ainda.</div></div>
-      </div>
       <!-- Lista de usuários -->
       <div class="card">
         <div class="card-title">Usuários cadastrados</div>
@@ -1172,6 +1142,11 @@ async function sbAuth(path, body) {
 }
 
 async function sbFetch(path, opts = {}) {
+  // Bloquear escrita no modo demo
+  if (window._demoMode && opts.method && ['POST','PATCH','DELETE','PUT'].includes(opts.method)) {
+    console.log('[DEMO] Operação bloqueada:', opts.method, path);
+    return [];
+  }
   const headers = {
     'apikey': SUPA_KEY,
     'Authorization': 'Bearer ' + (authToken || SUPA_KEY),
@@ -1262,57 +1237,14 @@ async function doLogin() {
 
   // Verificar se usuário está ativo
   try {
-    const perfil = await sbFetch(`perfis?id=eq.${currentUser.id}&select=ativo,nome`);
-
-    if (!perfil.length) {
-      // Perfil não existe — verificar se tem convite ou acesso doado válido
-      const emailUser = currentUser.email.toLowerCase();
-
-      // Verificar acessos_doados
-      const acessoDoado = await sbFetch(`acessos_doados?email=eq.${encodeURIComponent(emailUser)}&ativo=eq.true`);
-      // Verificar convites pelo destinatário (email)
-      const conviteEmail = await sbFetch(`convites?destinatario=eq.${encodeURIComponent(emailUser)}&ativo=eq.false`);
-
-      const temAcesso = acessoDoado && acessoDoado.length > 0;
-      const temConvite = conviteEmail && conviteEmail.length > 0;
-
-      if (temAcesso || temConvite) {
-        // Criar perfil automaticamente
-        const ad = temAcesso ? acessoDoado[0] : null;
-        const expirou = ad && ad.expira_em && new Date(ad.expira_em) < new Date();
-        if (expirou) {
-          authToken = null; currentUser = null;
-          const el = document.getElementById('login-error');
-          el.textContent = 'Seu acesso doado expirou. Entre em contato com o administrador.';
-          el.style.display = 'block';
-          setLoading(false); return;
-        }
-        const nome = currentUser.user_metadata?.nome || emailUser.split('@')[0];
-        await sbFetch('perfis', {
-          method: 'POST', prefer: 'return=minimal',
-          body: JSON.stringify({
-            id: currentUser.id,
-            nome,
-            email: emailUser,
-            ativo: true,
-            acesso_doado: temAcesso,
-            doacao_expira_em: ad ? ad.expira_em : null
-          })
-        });
-        // Perfil criado, continuar login normalmente
-      } else {
-        authToken = null; currentUser = null;
-        const el = document.getElementById('login-error');
-        el.textContent = 'Sua conta não está autorizada. Entre em contato com o administrador.';
-        el.style.display = 'block';
-        setLoading(false); return;
-      }
-    } else if (perfil[0].ativo === false) {
+    const perfil = await sbFetch(`perfis?id=eq.${currentUser.id}&select=ativo`);
+    if (!perfil.length || perfil[0].ativo === false) {
       authToken = null; currentUser = null;
       const el = document.getElementById('login-error');
       el.textContent = 'Sua conta foi desativada ou excluída. Entre em contato com o administrador.';
       el.style.display = 'block';
-      setLoading(false); return;
+      setLoading(false);
+      return;
     }
   } catch(e) { console.error('Erro ao verificar perfil:', e); }
 
@@ -1348,6 +1280,9 @@ async function enterApp() {
 function doLogout() {
   localStorage.removeItem('oztech_session');
   currentUser = null; authToken = null; isAdmin = false; ud = defaultData();
+  window._demoMode = false;
+  const banner = document.getElementById('demo-banner');
+  if (banner) banner.remove();
   document.getElementById('inp-user').value = '';
   document.getElementById('inp-pass').value = '';
   document.getElementById('view-app').style.display   = 'none';
@@ -1370,6 +1305,29 @@ function goReset()  {
   showMsg('reset2-msg','',''); showStep('step-reset2');
 }
 function goPlanos() { showStep('step-planos'); }
+
+function goDemo() {
+  // Modo demo — entra no app sem autenticação, dados não são salvos
+  currentUser = { id: 'demo', email: 'demo@demo.com', user_metadata: { nome: 'Visitante' } };
+  authToken = null;
+  isAdmin = false;
+  window._demoMode = true;
+  document.getElementById('view-login').style.display = 'none';
+  document.getElementById('view-app').style.display   = 'block';
+  document.getElementById('sb-name').textContent   = 'Visitante';
+  document.getElementById('sb-avatar').textContent = 'V';
+  document.getElementById('nav-admin').style.display = 'none';
+  document.getElementById('nav-planos').style.display = 'flex';
+  document.querySelectorAll('.nav-item').forEach((b,i) => b.classList.toggle('active', i===0));
+  document.querySelectorAll('.page').forEach((p,i) => p.classList.toggle('active', i===0));
+  setNow();
+  // Mostrar aviso de modo demo
+  const aviso = document.createElement('div');
+  aviso.id = 'demo-banner';
+  aviso.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#FFB830;color:#000;text-align:center;padding:6px;font-size:12px;font-weight:600;z-index:9999;';
+  aviso.innerHTML = '🔍 Modo demonstração — dados não são salvos. <a onclick="doLogout()" style="cursor:pointer;text-decoration:underline;margin-left:8px;">Sair</a>';
+  document.body.prepend(aviso);
+}
 
 async function irParaPagamento(plano) {
   setLoading(true);
