@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Redirecionando...</title>
+</head>
+<body>
+<script>
+  // Pegar o hash da URL (token do Supabase)
+  const hash = window.location.hash;
+  if (hash) {
+    window.location.href = 'https://oztechsmartcontrol.github.io/Gestao-Financeira-/' + hash;
+  } else {
+    window.location.href = 'https://oztechsmartcontrol.github.io/Gestao-Financeira-/';
+  }
+</script>
+<p>Redirecionando...</p>
+</body>
+</html>
