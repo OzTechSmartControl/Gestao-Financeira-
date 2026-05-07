@@ -218,18 +218,35 @@
 
   /* ── MOBILE ─────────────────────────────── */
   @media (max-width: 768px) {
-    /* Login */
-    #view-login { padding: 1rem; align-items: center; padding-top: 2rem; }
-    .login-box { padding: 1.75rem 1.25rem; border-radius: 20px; }
+    /* ── LOGIN ── */
+    #view-login { padding: 0; align-items: flex-end; padding-top: 0; }
+    .login-box {
+      padding: 2rem 1.5rem 2.5rem;
+      border-radius: 24px 24px 0 0;
+      width: 100%;
+      max-width: 100%;
+      box-shadow: 0 -8px 40px rgba(0,0,0,0.4);
+    }
+    .login-logo { width: 64px; height: 64px; margin-bottom: 10px; }
+    .login-title { font-size: 15px; }
+    .btn-login { padding: 14px; font-size: 16px; border-radius: 14px; }
+    .btn-forgot { padding: 12px; font-size: 14px; border-radius: 12px; }
+    .field label { font-size: 12px; }
+    .f-input { font-size: 16px !important; padding: 13px 14px; border-radius: 12px; }
+    .reset-title { font-size: 20px; }
+    .reset-sub { font-size: 13px; }
 
-    /* Sidebar vira bottom nav fixo */
+    /* ── SIDEBAR → BOTTOM NAV ── */
     .sidebar {
       top: auto; left: 0; right: 0; bottom: 0;
-      width: 100%; height: 62px;
+      width: 100%; height: 64px;
       flex-direction: row;
       padding: 0; margin: 0;
       border-right: none;
       border-top: 1px solid var(--border);
+      background: rgba(15,17,21,0.97);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       z-index: 200;
       overflow: hidden;
     }
@@ -240,19 +257,20 @@
     .nav-item {
       flex: 1; flex-direction: column;
       align-items: center; justify-content: center;
-      gap: 3px; padding: 8px 2px 10px;
-      font-size: 10px; font-weight: 500;
+      gap: 3px; padding: 6px 2px 10px;
+      font-size: 9px; font-weight: 500;
       margin-bottom: 0; border-radius: 0;
       width: auto; text-align: center;
       color: var(--text3);
+      letter-spacing: 0.01em;
     }
     .nav-dot { display: none; }
-    .nav-item::before { font-size: 19px; line-height: 1; display: block; }
-    .nav-item.green::before  { content: '📈'; }
-    .nav-item.red::before    { content: '📉'; }
+    .nav-item::before { font-size: 20px; line-height: 1.2; display: block; }
+    .nav-item.green::before  { content: '💰'; }
+    .nav-item.red::before    { content: '💸'; }
     .nav-item.blue::before   { content: '📊'; }
     .nav-item.purple::before { content: '💡'; }
-    .nav-item.orange::before { content: '🗓️'; }
+    .nav-item.orange::before { content: '📅'; }
     .nav-item.active { background: transparent; border-top: 2px solid; }
     .nav-item.active.green  { color: var(--green);  border-top-color: var(--green); }
     .nav-item.active.red    { color: var(--red);    border-top-color: var(--red); }
@@ -260,71 +278,102 @@
     .nav-item.active.purple { color: var(--purple); border-top-color: var(--purple); }
     .nav-item.active.orange { color: #FFB830;       border-top-color: #FFB830; }
 
-    /* Main — sem margin da sidebar, com espaço pro bottom nav */
+    /* ── MAIN ── */
     .main {
       margin-left: 0 !important;
-      padding: 1.25rem 1rem !important;
-      padding-bottom: 75px !important;
+      padding: 1rem 0.875rem !important;
+      padding-bottom: 80px !important;
       width: 100%;
     }
 
-    /* Topbar */
-    .topbar { margin-bottom: 1rem; }
-    .page-title { font-size: 20px; }
+    /* ── TOPBAR ── */
+    .page-header { margin-bottom: 1rem; }
+    .page-title { font-size: 20px; font-weight: 700; }
     .page-sub   { font-size: 12px; margin-top: 2px; }
 
-    /* Cards */
-    .card { padding: 1rem; border-radius: 12px; }
-    .card-title { font-size: 10px; }
+    /* ── CARDS ── */
+    .card { padding: 1rem; border-radius: 14px; margin-bottom: 0.75rem; }
+    .card-title { font-size: 10px; margin-bottom: 0.75rem; }
 
-    /* Formulários — 1 coluna, inputs grandes para não dar zoom no iOS */
+    /* ── FORM ── */
     .form-grid { grid-template-columns: 1fr !important; gap: 10px; }
-    .f-input { font-size: 16px !important; padding: 12px 14px; }
-    .f-label { font-size: 11px; }
+    .f-input { font-size: 16px !important; padding: 13px 14px; border-radius: 10px; }
+    .f-label { font-size: 12px; margin-bottom: 5px; }
+    .gen-convite-wrap { flex-direction: column !important; gap: 10px; }
 
     /* Tags */
-    .tag { font-size: 13px; padding: 6px 14px; }
-    .add-cat-row { gap: 8px; }
-    .btn-add-cat { font-size: 13px; padding: 10px 14px; }
+    .tag { font-size: 13px; padding: 7px 14px; border-radius: 20px; }
+    .add-cat-row { gap: 8px; flex-wrap: wrap; }
+    .btn-add-cat { font-size: 13px; padding: 10px 16px; }
 
     /* Botão submit */
-    .btn-submit { width: 100% !important; padding: 14px; font-size: 15px; }
+    .btn-submit { width: 100% !important; padding: 14px; font-size: 15px; border-radius: 12px; }
 
-    /* Métricas 2x2 */
+    /* ── MÉTRICAS ── */
     .metric-row { grid-template-columns: 1fr 1fr; gap: 8px; }
-    .metric-card { padding: 10px 12px; }
-    .metric-val { font-size: 15px; }
+    .metric-card { padding: 12px; border-radius: 12px; }
+    .metric-val { font-size: 16px; }
     .metric-label { font-size: 10px; }
 
-    /* Gráficos empilhados */
-    .charts-row { grid-template-columns: 1fr; gap: 1rem; }
-    .chart-wrap { height: 220px; }
+    /* ── GRÁFICOS ── */
+    .charts-row { grid-template-columns: 1fr; gap: 0.75rem; }
+    .chart-wrap { height: 200px; }
 
-    /* Distribuição 1 coluna */
-    .dist-blocks { grid-template-columns: 1fr; gap: 10px; }
-    .dist-block { padding: 1rem; }
+    /* ── DISTRIBUIÇÃO ── */
+    .dist-blocks { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .dist-block { padding: 0.875rem; border-radius: 12px; }
     .dist-block-val { font-size: 18px; }
+    #perfis-grid { grid-template-columns: 1fr 1fr !important; gap: 8px; }
+    .perfil-btn { padding: 12px 8px; border-radius: 10px; }
+    .perfil-nome { font-size: 12px; }
+    .perfil-pcts { font-size: 10px; }
 
-    /* Histórico */
+    /* ── HISTÓRICO ── */
     .hist-summary { grid-template-columns: 1fr 1fr; gap: 8px; }
-    .hist-controls { flex-direction: column; align-items: stretch; gap: 10px; }
+    .hist-controls { flex-direction: column; align-items: stretch; gap: 8px; }
     .hist-toggle { display: flex; }
-    .hist-toggle button { flex: 1; }
+    .hist-toggle button { flex: 1; font-size: 13px; padding: 8px; }
     .hist-nav { margin-left: 0; width: 100%; justify-content: space-between; }
     .hist-nav span { min-width: auto; flex: 1; text-align: center; font-size: 13px; }
-    .hist-bar-chart { height: 220px; }
+    .hist-bar-chart { height: 200px; }
 
-    /* Lista */
-    .list-item { gap: 8px; padding: 10px 0; }
-    .list-icon { width: 32px; height: 32px; font-size: 14px; border-radius: 8px; }
-    .list-title { font-size: 13px; }
+    /* ── LISTA ── */
+    .list-item { gap: 10px; padding: 10px 0; }
+    .list-icon { width: 34px; height: 34px; font-size: 15px; border-radius: 9px; flex-shrink: 0; }
+    .list-title { font-size: 13px; font-weight: 500; }
     .list-amount { font-size: 13px; }
     .list-sub { font-size: 11px; }
 
-    /* Mês */
-    .month-row-nums { gap: 8px; }
+    /* ── ADMIN ── */
+    .admin-table { font-size: 12px; }
+    .admin-table th, .admin-table td { padding: 8px 6px; }
+    .btn-sm { font-size: 11px; padding: 4px 8px; }
+    .status-pill { font-size: 10px; padding: 2px 8px; }
+
+    /* ── METAS ── */
+    .meta-card { padding: 1rem; border-radius: 12px; }
+
+    /* ── INVESTIMENTOS ── */
+    .inv-summary { grid-template-columns: 1fr 1fr; gap: 8px; }
+
+    /* ── MÊS ── */
+    .month-row-nums { gap: 6px; }
     .month-row-num { font-size: 11px; }
     .month-badge { font-size: 10px; padding: 2px 6px; }
+
+    /* ── OVERVIEW ── */
+    .overview-grid { grid-template-columns: 1fr !important; }
+  }
+
+  /* Extra small — telas muito pequenas */
+  @media (max-width: 380px) {
+    .main { padding: 0.75rem 0.75rem !important; padding-bottom: 80px !important; }
+    .nav-item { font-size: 8px; }
+    .nav-item::before { font-size: 18px; }
+    .metric-val { font-size: 14px; }
+    .page-title { font-size: 18px; }
+    .dist-blocks { grid-template-columns: 1fr; }
+    #perfis-grid { grid-template-columns: 1fr !important; }
   }
   .nav-item.active.purple .nav-dot { background: var(--purple); }
   .nav-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text3); flex-shrink: 0; transition: background 0.2s; }
@@ -1304,9 +1353,9 @@ async function doLogin() {
 async function enterApp() {
   document.getElementById('view-login').style.display = 'none';
   document.getElementById('view-app').style.display   = 'block';
-  const nomeTemp = currentUser.user_metadata?.nome || currentUser.email.split('@')[0];
-  document.getElementById('sb-name').textContent   = nomeTemp;
-  document.getElementById('sb-avatar').textContent = nomeTemp[0].toUpperCase();
+  const nome = currentUser.user_metadata?.nome || currentUser.email.split('@')[0];
+  document.getElementById('sb-name').textContent   = nome;
+  document.getElementById('sb-avatar').textContent = nome[0].toUpperCase();
   // Mostrar aba admin se for admin
   document.getElementById('nav-admin').style.display = isAdmin ? 'flex' : 'none';
   // Mostrar aba planos para não-admin
@@ -1852,7 +1901,6 @@ async function carregarPerfil() {
     const perfis = await sbFetch(`perfis?id=eq.${currentUser.id}`);
     if (perfis.length) {
       currentPerfil = perfis[0];
-      // Atualizar nome na sidebar com o nome do perfil
       const nome = currentPerfil.nome || currentUser.user_metadata?.nome || currentUser.email.split('@')[0];
       document.getElementById('sb-name').textContent   = nome;
       document.getElementById('sb-avatar').textContent = nome[0].toUpperCase();
