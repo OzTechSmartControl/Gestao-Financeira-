@@ -709,21 +709,10 @@
       <div class="field"><label>E-mail</label><input type="email" id="inp-user" placeholder="seu@email.com" autocomplete="email"></div>
       <div class="field"><label>Senha</label><input type="password" id="inp-pass" placeholder="Digite sua senha" autocomplete="current-password"></div>
       <button class="btn-login" onclick="doLogin()">Entrar</button>
-      <div style="text-align:center;font-size:11px;color:var(--text3);margin-bottom:8px;">Disponível apenas para assinantes</div>
-      <button class="btn-forgot" style="background:rgba(74,158,255,0.12);color:var(--blue);border-color:rgba(74,158,255,0.3);" onclick="goDemo()">🔍 Teste gratuito</button>
-      <button class="btn-forgot" onclick="goSenha()">🔑 Alterar ou Redefinir Senha</button>
+      <div style="text-align:center;font-size:11px;color:var(--text3);margin-bottom:10px;">Disponível apenas para assinantes</div>
+      <button class="btn-forgot" onclick="goDemo()">Teste gratuito</button>
+      <button class="btn-forgot" onclick="goSenha()">Alterar ou Redefinir Senha</button>
       <button class="btn-forgot" style="background:rgba(0,196,140,0.1);border-color:rgba(0,196,140,0.3);color:var(--green);" onclick="goPlanos()">💳 Assinar plano</button>
-    </div>
-
-    <!-- OPÇÕES DE SENHA -->
-    <div class="reset-step" id="step-senha">
-      <button class="reset-back" onclick="goLogin()">← Voltar ao login</button>
-      <div class="reset-title">Senha</div>
-      <div class="reset-sub">O que deseja fazer?</div>
-      <button class="btn-login" style="margin-bottom:12px;" onclick="goReset()">🔑 Alterar senha</button>
-      <div style="text-align:center;font-size:12px;color:var(--text3);margin-bottom:12px;">Sei minha senha atual e quero trocar</div>
-      <button class="btn-login" style="background:rgba(74,158,255,0.15);color:var(--blue);border:1px solid rgba(74,158,255,0.3);" onclick="goEsqueciSenha()">📧 Esqueci minha senha</button>
-      <div style="text-align:center;font-size:12px;color:var(--text3);margin-top:8px;">Receberei um link de redefinição no e-mail</div>
     </div>
 
     <!-- TELA DE PLANOS PÚBLICA -->
@@ -753,8 +742,52 @@
         </div>
       </div>
       <div style="text-align:center;font-size:11px;color:var(--text3);">Pagamento seguro via Mercado Pago • Pix, cartão e boleto</div>
+      <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);text-align:center;">
+        <div style="font-size:12px;color:var(--text2);margin-bottom:10px;">Recebeu um acesso doado pelo administrador?</div>
+        <button class="btn-forgot" style="background:rgba(255,184,48,0.1);border-color:rgba(255,184,48,0.3);color:#FFB830;width:100%;" onclick="goResgatar()">🎁 Resgatar Acesso</button>
+      </div>
     </div>
 
+    <!-- OPÇÕES DE SENHA -->
+    <div class="reset-step" id="step-senha">
+      <button class="reset-back" onclick="goLogin()">← Voltar ao login</button>
+      <div class="reset-title">Senha</div>
+      <div class="reset-sub">Escolha uma opção:</div>
+      <button class="btn-login" style="margin-bottom:6px;" onclick="goReset()">🔑 Alterar senha</button>
+      <div style="text-align:center;font-size:11px;color:var(--text3);margin-bottom:14px;">Sei minha senha atual e quero trocar</div>
+      <button class="btn-login" style="background:rgba(74,158,255,0.15);color:var(--blue);border:1px solid rgba(74,158,255,0.3);" onclick="goEsqueciSenha()">📧 Esqueci minha senha</button>
+      <div style="text-align:center;font-size:11px;color:var(--text3);margin-top:6px;">Recebo um link de redefinição no e-mail cadastrado</div>
+    </div>
+    <!-- ESQUECI MINHA SENHA -->
+    <div class="reset-step" id="step-esqueci">
+      <button class="reset-back" onclick="goSenha()">← Voltar</button>
+      <div class="reset-title">Redefinir senha</div>
+      <div class="reset-sub">Informe o e-mail cadastrado e ativo.</div>
+      <div class="login-msg" id="esqueci-msg"></div>
+      <div class="field"><label>E-mail</label><input type="email" id="esqueci-email" placeholder="seu@email.com"></div>
+      <button class="btn-login" onclick="enviarRecuperacao()">Enviar link de redefinição</button>
+    </div>
+    <!-- NOVA SENHA -->
+    <div class="reset-step" id="step-nova-senha">
+      <div class="reset-title">🔐 Criar nova senha</div>
+      <div class="reset-sub">Defina sua nova senha abaixo.</div>
+      <div class="login-msg" id="nova-senha-msg"></div>
+      <div class="field"><label>Nova senha</label><input type="password" id="nova-pass1" placeholder="Mínimo 6 caracteres"></div>
+      <div class="field"><label>Confirmar nova senha</label><input type="password" id="nova-pass2" placeholder="Repita a nova senha"></div>
+      <button class="btn-login" onclick="salvarNovaSenha()">Salvar nova senha</button>
+    </div>
+    <!-- RESGATAR ACESSO DOADO -->
+    <div class="reset-step" id="step-resgatar">
+      <button class="reset-back" onclick="goPlanos()">← Voltar</button>
+      <div class="reset-title">🎁 Resgatar Acesso</div>
+      <div class="reset-sub">Preencha seus dados para criar sua conta com o acesso concedido pelo administrador.</div>
+      <div class="login-msg" id="resgatar-msg"></div>
+      <div class="field"><label>Nome</label><input type="text" id="rsg-nome" placeholder="Como quer ser chamado"></div>
+      <div class="field"><label>E-mail</label><input type="email" id="rsg-email" placeholder="E-mail que recebeu o acesso"></div>
+      <div class="field"><label>Senha</label><input type="password" id="rsg-senha" placeholder="Mínimo 6 caracteres"></div>
+      <div class="field"><label>Confirmar senha</label><input type="password" id="rsg-senha2" placeholder="Repita a senha"></div>
+      <button class="btn-login" onclick="resgatarAcesso()">Criar minha conta</button>
+    </div>
     <!-- ALTERAR SENHA -->
     <div class="reset-step" id="step-reset2">
       <button class="reset-back" onclick="goSenha()">← Voltar</button>
@@ -766,16 +799,6 @@
       <div class="field"><label>Nova senha</label><input type="password" id="new-pass1" placeholder="Mínimo 6 caracteres"></div>
       <div class="field"><label>Confirmar nova senha</label><input type="password" id="new-pass2" placeholder="Repita a nova senha"></div>
       <button class="btn-login" onclick="saveNewPass()">Salvar nova senha</button>
-    </div>
-
-    <!-- ESQUECI MINHA SENHA -->
-    <div class="reset-step" id="step-esqueci">
-      <button class="reset-back" onclick="goSenha()">← Voltar</button>
-      <div class="reset-title">Redefinir senha</div>
-      <div class="reset-sub">Informe seu e-mail e enviaremos um link para redefinir sua senha.</div>
-      <div class="login-msg" id="esqueci-msg"></div>
-      <div class="field"><label>E-mail</label><input type="email" id="esqueci-email" placeholder="seu@email.com"></div>
-      <button class="btn-login" onclick="enviarRecuperacao()">📧 Enviar link de redefinição</button>
     </div>
 
     <div style="margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--border);text-align:center;">
@@ -1107,41 +1130,31 @@
     <div class="page" id="page-admin">
       <div class="page-header">
         <div class="page-title">Painel Admin <span class="admin-badge">ADM</span></div>
-        <div class="page-sub">Gerencie usuários e convites da plataforma</div>
+        <div class="page-sub">Gerencie usuários e acessos da plataforma</div>
       </div>
-      <!-- Gerar convite -->
+      <!-- Doação de acesso -->
       <div class="card">
-        <div class="card-title">Gerar novo convite</div>
+        <div class="card-title">Doar acesso</div>
         <div class="gen-convite-wrap">
           <div class="field" style="flex:2;">
-            <label class="f-label">Destinatário (opcional)</label>
-            <input class="f-input" type="text" id="conv-dest" placeholder="Nome ou e-mail de quem vai receber">
+            <label class="f-label">Usuário (e-mail)</label>
+            <input class="f-input" type="email" id="doacao-email" placeholder="email@exemplo.com">
           </div>
           <div class="field">
-            <label class="f-label">Expira em</label>
-            <select class="f-input" id="conv-expira">
-              <option value="7">7 dias</option>
-              <option value="15">15 dias</option>
-              <option value="30" selected>30 dias</option>
-              <option value="0">Sem expiração</option>
+            <label class="f-label">Expiração</label>
+            <select class="f-input" id="doacao-expira">
+              <option value="0">Indeterminado</option>
+              <option value="30">30 dias</option>
+              <option value="90">90 dias</option>
+              <option value="180">180 dias</option>
+              <option value="365">1 ano</option>
             </select>
           </div>
-          <button class="btn-submit green" style="width:auto;padding:10px 20px;align-self:flex-end;" onclick="gerarConvite()">Gerar convite</button>
+          <button class="btn-submit" style="width:auto;padding:10px 20px;align-self:flex-end;background:#FFB830;color:#000;font-weight:600;" onclick="doarAcesso()">🎁 Doar acesso</button>
         </div>
-        <div id="conv-gerado" style="display:none;">
-          <div class="card-title" style="margin-bottom:8px;">Convite gerado — compartilhe com o usuário:</div>
-          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-            <span class="convite-code" id="conv-code-display" onclick="copiarCodigo()"></span>
-            <button class="btn-sm blue" onclick="copiarCodigo()">📋 Copiar</button>
-          </div>
-        </div>
+        <div class="login-msg" id="doacao-msg"></div>
       </div>
 
-      <!-- Lista de convites -->
-      <div class="card">
-        <div class="card-title">Convites gerados</div>
-        <div id="lista-convites"><div class="empty">Nenhum convite gerado ainda.</div></div>
-      </div>
       <!-- Lista de usuários -->
       <div class="card">
         <div class="card-title">Usuários cadastrados</div>
@@ -1172,6 +1185,7 @@ async function sbAuth(path, body) {
 }
 
 async function sbFetch(path, opts = {}) {
+  if (window._demoMode && opts.method && ['POST','PATCH','DELETE','PUT'].includes(opts.method)) { return []; }
   const headers = {
     'apikey': SUPA_KEY,
     'Authorization': 'Bearer ' + (authToken || SUPA_KEY),
@@ -1220,6 +1234,12 @@ function setLoading(on) {
 document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('inp-pass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
   document.getElementById('new-pass2').addEventListener('keydown', e => { if(e.key==='Enter') saveNewPass(); });
+  const hash=window.location.hash;
+  if(hash&&hash.includes('type=recovery')&&hash.includes('access_token=')){
+    const params=new URLSearchParams(hash.substring(1));const token=params.get('access_token');
+    if(token){authToken=token;window.history.replaceState(null,'',window.location.pathname);
+    document.getElementById('nova-pass1').value='';document.getElementById('nova-pass2').value='';
+    showMsg('nova-senha-msg','','');showStep('step-nova-senha');setLoading(false);return;}}
   // Verificar sessão salva
   const saved = localStorage.getItem('oztech_session');
   if (saved) {
@@ -1305,6 +1325,8 @@ async function enterApp() {
 function doLogout() {
   localStorage.removeItem('oztech_session');
   currentUser = null; authToken = null; isAdmin = false; ud = defaultData();
+  window._demoMode = false;
+  const banner = document.getElementById('demo-banner'); if (banner) banner.remove();
   document.getElementById('inp-user').value = '';
   document.getElementById('inp-pass').value = '';
   document.getElementById('view-app').style.display   = 'none';
@@ -1316,47 +1338,88 @@ function doLogout() {
 
 // ── NAVEGAÇÃO LOGIN ────────────────────────────────────
 function showStep(id) {
-  ['step-login','step-reset2','step-planos','step-senha','step-esqueci'].forEach(s => {
+  ['step-login','step-reset2','step-planos','step-senha','step-esqueci','step-nova-senha','step-resgatar'].forEach(s => {
     document.getElementById(s).classList.toggle('active', s === id);
   });
   document.getElementById('login-error').style.display = 'none';
 }
 function goLogin()  { showStep('step-login'); }
-function goSenha() {
-  showMsg('reset2-msg','','');
-  showMsg('esqueci-msg','','');
-  showStep('step-senha');
-}
-function goEsqueciSenha() {
-  document.getElementById('esqueci-email').value = '';
-  showMsg('esqueci-msg','','');
-  showStep('step-esqueci');
-}
-async function enviarRecuperacao() {
-  const email = document.getElementById('esqueci-email').value.trim().toLowerCase();
-  if (!email) { showMsg('esqueci-msg','error','Informe seu e-mail.'); return; }
-  setLoading(true);
-  try {
-    const res = await fetch(`${SUPA_URL}/auth/v1/recover`, {
-      method: 'POST',
-      headers: { 'apikey': SUPA_KEY, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email })
-    });
-    if (res.ok) {
-      showMsg('esqueci-msg','success','✅ Link enviado! Verifique seu e-mail.');
-      setTimeout(() => goLogin(), 4000);
-    } else {
-      const err = await res.json();
-      showMsg('esqueci-msg','error', err.msg || err.message || 'Erro ao enviar e-mail.');
-    }
-  } catch(e) { showMsg('esqueci-msg','error','Erro: ' + e.message); }
-  setLoading(false);
-}
 function goReset()  {
   ['reset-email','reset-cur-pass','new-pass1','new-pass2'].forEach(id => document.getElementById(id).value = '');
   showMsg('reset2-msg','',''); showStep('step-reset2');
 }
 function goPlanos() { showStep('step-planos'); }
+function goSenha() { showStep('step-senha'); }
+function goResgatar() {
+  ['rsg-nome','rsg-email','rsg-senha','rsg-senha2'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  showMsg('resgatar-msg','',''); showStep('step-resgatar');
+}
+async function resgatarAcesso() {
+  const nome=document.getElementById('rsg-nome').value.trim();
+  const email=document.getElementById('rsg-email').value.trim().toLowerCase();
+  const senha=document.getElementById('rsg-senha').value;
+  const senha2=document.getElementById('rsg-senha2').value;
+  if(!nome||!email||!senha){showMsg('resgatar-msg','error','Preencha todos os campos.');return;}
+  if(senha!==senha2){showMsg('resgatar-msg','error','As senhas não coincidem.');return;}
+  if(senha.length<6){showMsg('resgatar-msg','error','Mínimo 6 caracteres.');return;}
+  setLoading(true);
+  try {
+    const acesso=await fetch(`${SUPA_URL}/rest/v1/acessos_doados?email=eq.${encodeURIComponent(email)}&ativo=eq.true`,{headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}}).then(r=>r.json());
+    if(!acesso||!acesso.length){showMsg('resgatar-msg','error','Este e-mail não possui acesso doado ativo. Verifique com o administrador.');setLoading(false);return;}
+    if(acesso[0].expira_em&&new Date(acesso[0].expira_em)<new Date()){showMsg('resgatar-msg','error','O acesso doado expirou.');setLoading(false);return;}
+    const reg=await sbAuth('signup',{email,password:senha,options:{data:{nome}}});
+    if(reg.error){showMsg('resgatar-msg','error',reg.error.message||'Erro ao criar conta.');setLoading(false);return;}
+    showMsg('resgatar-msg','success','✅ Conta criada! Faça login com seu e-mail e senha.');
+    setTimeout(()=>{document.getElementById('inp-user').value=email;goLogin();},2500);
+  } catch(e){showMsg('resgatar-msg','error','Erro: '+e.message);}
+  setLoading(false);
+}
+function goEsqueciSenha(){document.getElementById('esqueci-email').value='';showMsg('esqueci-msg','','');showStep('step-esqueci');}
+async function enviarRecuperacao(){
+  const email=document.getElementById('esqueci-email').value.trim().toLowerCase();
+  if(!email){showMsg('esqueci-msg','error','Informe seu e-mail.');return;}
+  setLoading(true);
+  try{
+    const perfis=await fetch(`${SUPA_URL}/rest/v1/perfis?email=eq.${encodeURIComponent(email)}&ativo=eq.true`,{headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}}).then(r=>r.json());
+    if(!perfis||!perfis.length){showMsg('esqueci-msg','error','E-mail não encontrado ou conta inativa.');setLoading(false);return;}
+    const res=await fetch(`${SUPA_URL}/auth/v1/recover`,{method:'POST',headers:{'apikey':SUPA_KEY,'Content-Type':'application/json'},body:JSON.stringify({email})});
+    if(res.ok){showMsg('esqueci-msg','success','✅ Link enviado! Verifique seu e-mail.');}
+    else{const err=await res.json();showMsg('esqueci-msg','error',err.msg||err.message||'Erro ao enviar.');}
+  }catch(e){showMsg('esqueci-msg','error','Erro: '+e.message);}
+  setLoading(false);
+}
+async function salvarNovaSenha(){
+  const p1=document.getElementById('nova-pass1').value;
+  const p2=document.getElementById('nova-pass2').value;
+  if(!p1||!p2){showMsg('nova-senha-msg','error','Preencha os dois campos.');return;}
+  if(p1!==p2){showMsg('nova-senha-msg','error','As senhas não coincidem.');return;}
+  if(p1.length<6){showMsg('nova-senha-msg','error','Mínimo 6 caracteres.');return;}
+  setLoading(true);
+  try{
+    const res=await fetch(`${SUPA_URL}/auth/v1/user`,{method:'PUT',headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+authToken,'Content-Type':'application/json'},body:JSON.stringify({password:p1})});
+    if(res.ok){showMsg('nova-senha-msg','success','✅ Senha redefinida!');setTimeout(()=>{authToken=null;currentUser=null;goLogin();},2500);}
+    else{const err=await res.json();showMsg('nova-senha-msg','error',err.msg||err.message||'Erro.');}
+  }catch(e){showMsg('nova-senha-msg','error','Erro: '+e.message);}
+  setLoading(false);
+}
+function goDemo(){
+  currentUser={id:'demo',email:'demo@demo.com',user_metadata:{nome:'Visitante'}};
+  authToken=null;isAdmin=false;window._demoMode=true;
+  document.getElementById('view-login').style.display='none';
+  document.getElementById('view-app').style.display='block';
+  document.getElementById('sb-name').textContent='Visitante';
+  document.getElementById('sb-avatar').textContent='V';
+  document.getElementById('nav-admin').style.display='none';
+  document.getElementById('nav-planos').style.display='flex';
+  document.querySelectorAll('.nav-item').forEach((b,i)=>b.classList.toggle('active',i===0));
+  document.querySelectorAll('.page').forEach((p,i)=>p.classList.toggle('active',i===0));
+  setNow();
+  const aviso=document.createElement('div');
+  aviso.id='demo-banner';
+  aviso.style.cssText='position:fixed;top:0;left:0;right:0;background:#FFB830;color:#000;text-align:center;padding:6px;font-size:12px;font-weight:600;z-index:9999;';
+  aviso.innerHTML='🔍 Modo demonstração — dados não são salvos. <a onclick="doLogout()" style="cursor:pointer;text-decoration:underline;margin-left:8px;">Sair</a>';
+  document.body.prepend(aviso);
+}
 
 async function irParaPagamento(plano) {
   setLoading(true);
@@ -1860,30 +1923,35 @@ function renderPlanoAtual() {
 
 // ── DOAÇÃO DE ACESSO ───────────────────────────────────
 async function doarAcesso() {
-  const email   = document.getElementById('doacao-email').value.trim();
+  const email   = document.getElementById('doacao-email').value.trim().toLowerCase();
   const expDias = parseInt(document.getElementById('doacao-expira').value);
-  if (!email) { showMsg('doacao-msg','error','Informe o e-mail do usuário.'); return; }
+  if (!email) { showMsg('doacao-msg','error','Informe o e-mail.'); return; }
   setLoading(true);
   try {
-    // Buscar perfil pelo email usando service key para bypass RLS
-    const resPerfil = await fetch(`${SUPA_URL}/rest/v1/perfis?email=eq.${encodeURIComponent(email)}`, {
-      headers: {
-        'apikey': 'sb_secret_fdNAGdaPDmGTIC1mWA0IBw_TgUA8dzh',
-        'Authorization': 'Bearer sb_secret_fdNAGdaPDmGTIC1mWA0IBw_TgUA8dzh',
-        'Content-Type': 'application/json'
-      }
-    });
-    const perfis = await resPerfil.json();
-    if (!perfis.length) { showMsg('doacao-msg','error','Usuário não encontrado.'); setLoading(false); return; }
-    const perfil = perfis[0];
     const expira = expDias > 0 ? new Date(Date.now() + expDias*24*60*60*1000).toISOString() : null;
-    await sbFetch(`perfis?id=eq.${perfil.id}`, {
-      method: 'PATCH', prefer: 'return=minimal',
-      body: JSON.stringify({ acesso_doado: true, doacao_expira_em: expira, ativo: true })
-    });
+    const existente = await sbFetch(`acessos_doados?email=eq.${encodeURIComponent(email)}`);
+    if (existente && existente.length) {
+      await sbFetch(`acessos_doados?email=eq.${encodeURIComponent(email)}`, {
+        method: 'PATCH', prefer: 'return=minimal',
+        body: JSON.stringify({ ativo: true, expira_em: expira, doado_por: currentUser.email })
+      });
+    } else {
+      await sbFetch('acessos_doados', {
+        method: 'POST', prefer: 'return=minimal',
+        body: JSON.stringify({ email, ativo: true, expira_em: expira, doado_por: currentUser.email })
+      });
+    }
+    try {
+      const perfis = await sbFetch(`perfis?email=eq.${encodeURIComponent(email)}`);
+      if (perfis && perfis.length) {
+        await sbFetch(`perfis?id=eq.${perfis[0].id}`, {
+          method: 'PATCH', prefer: 'return=minimal',
+          body: JSON.stringify({ acesso_doado: true, doacao_expira_em: expira, ativo: true })
+        });
+      }
+    } catch(e2) {}
     showMsg('doacao-msg','success',`✅ Acesso doado para ${email}${expira ? ' até ' + new Date(expira).toLocaleDateString('pt-BR') : ' por prazo indeterminado'}!`);
     document.getElementById('doacao-email').value = '';
-    carregarAdminData();
   } catch(e) { showMsg('doacao-msg','error','Erro: ' + e.message); }
   setLoading(false);
 }
@@ -1917,23 +1985,6 @@ function copiarCodigo() {
 
 async function carregarAdminData() {
   try {
-    // Convites
-    const convites = await sbFetch('convites?order=criado_em.desc');
-    const lc = document.getElementById('lista-convites');
-    if (!convites.length) { lc.innerHTML = '<div class="empty">Nenhum convite gerado ainda.</div>'; }
-    else {
-      lc.innerHTML = `<table class="admin-table">
-        <thead><tr><th>Código</th><th>Destinatário</th><th>Status</th><th>Expira em</th><th>Ação</th></tr></thead>
-        <tbody>` + convites.map(c => `
-        <tr>
-          <td><span class="convite-code" onclick="navigator.clipboard.writeText('${c.codigo}');document.getElementById('copy-toast').classList.add('show');setTimeout(()=>document.getElementById('copy-toast').classList.remove('show'),2000)">${c.codigo}</span></td>
-          <td>${c.criado_por || '—'}</td>
-          <td><span class="status-pill ${c.ativo ? 'active' : 'inactive'}">${c.ativo ? 'Disponível' : 'Usado'}</span></td>
-          <td>${c.expira_em ? new Date(c.expira_em).toLocaleDateString('pt-BR') : 'Sem limite'}</td>
-          <td>${c.ativo ? `<button class="btn-sm red" onclick="revogarConvite(${c.id})">Revogar</button>` : '—'}</td>
-        </tr>`).join('') + '</tbody></table>';
-    }
-
     // Usuários — buscar direto da tabela perfis sem RLS complexo
     const lu = document.getElementById('lista-usuarios');
     lu.innerHTML = '<div class="empty">Carregando usuários...</div>';
