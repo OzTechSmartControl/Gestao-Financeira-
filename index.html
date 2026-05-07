@@ -1369,6 +1369,21 @@ async function resgatarAcesso() {
     if(acesso[0].expira_em&&new Date(acesso[0].expira_em)<new Date()){showMsg('resgatar-msg','error','O acesso doado expirou.');setLoading(false);return;}
     const reg=await sbAuth('signup',{email,password:senha,options:{data:{nome}}});
     if(reg.error){showMsg('resgatar-msg','error',reg.error.message||'Erro ao criar conta.');setLoading(false);return;}
+    // Criar perfil com o nome correto usando service key
+    if(reg.user && reg.user.id) {
+      try {
+        await fetch(`${SUPA_URL}/rest/v1/perfis`, {
+          method: 'POST',
+          headers: {
+            'apikey': 'sb_secret_fdNAGdaPDmGTIC1mWA0IBw_TgUA8dzh',
+            'Authorization': 'Bearer sb_secret_fdNAGdaPDmGTIC1mWA0IBw_TgUA8dzh',
+            'Content-Type': 'application/json',
+            'Prefer': 'return=minimal,resolution=ignore-duplicates'
+          },
+          body: JSON.stringify({ id: reg.user.id, nome, email, ativo: true, acesso_doado: true })
+        });
+      } catch(e2) { console.log('Perfil será criado no login'); }
+    }
     showMsg('resgatar-msg','success','✅ Conta criada! Faça login com seu e-mail e senha.');
     setTimeout(()=>{document.getElementById('inp-user').value=email;goLogin();},2500);
   } catch(e){showMsg('resgatar-msg','error','Erro: '+e.message);}
