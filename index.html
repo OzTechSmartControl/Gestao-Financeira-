@@ -719,13 +719,13 @@
     <div class="reset-step" id="step-planos">
       <button class="reset-back" onclick="goLogin()">← Voltar ao login</button>
       <div class="reset-title">Escolha seu plano</div>
-      <div class="reset-sub">Após a confirmação do pagamento, enviaremos um e-mail com as instruções de acesso à plataforma.</div>
+      <div class="reset-sub">Após o pagamento, você receberá um e-mail para criar sua senha e acessar a plataforma.</div>
       <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:16px;">
         <div style="background:var(--bg3);border:1px solid rgba(74,158,255,0.3);border-radius:var(--radius-sm);padding:16px;cursor:pointer;" onclick="irParaPagamento('mensal')">
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <div>
               <div style="font-size:14px;font-weight:600;color:var(--blue);">Plano Mensal</div>
-              <div style="font-size:12px;color:var(--text2);margin-top:2px;">Acesso por 30 dias, com renovação automática.</div>
+              <div style="font-size:12px;color:var(--text2);margin-top:2px;">Renovação automática a cada 30 dias</div>
             </div>
             <div style="font-size:20px;font-weight:700;color:var(--text);">R$ 19,90</div>
           </div>
@@ -735,15 +735,15 @@
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <div>
               <div style="font-size:14px;font-weight:600;color:var(--green);">Plano Vitalício</div>
-              <div style="font-size:12px;color:var(--text2);margin-top:2px;">Pagamento único. Acesso ilimitado à plataforma.</div>
+              <div style="font-size:12px;color:var(--text2);margin-top:2px;">Pagamento único — acesso para sempre</div>
             </div>
             <div style="font-size:20px;font-weight:700;color:var(--text);">R$ 299,90</div>
           </div>
         </div>
       </div>
-      <div style="text-align:center;font-size:11px;color:var(--text3);">Pagamento seguro via Mercado Pago<br>Pix, cartão e boleto</div>
+      <div style="text-align:center;font-size:11px;color:var(--text3);">Pagamento seguro via Mercado Pago • Pix, cartão e boleto</div>
       <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);text-align:center;">
-        <div style="font-size:12px;color:var(--text2);margin-bottom:10px;">Recebeu um convite de acesso?</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:10px;">Recebeu um acesso doado pelo administrador?</div>
         <button class="btn-forgot" style="background:rgba(255,184,48,0.1);border-color:rgba(255,184,48,0.3);color:#FFB830;width:100%;" onclick="goResgatar()">🎁 Resgatar Acesso</button>
       </div>
     </div>
@@ -1095,7 +1095,7 @@
     <div class="page" id="page-planos">
       <div class="page-header">
         <div class="page-title">Escolha seu Plano</div>
-        <div class="page-sub">Acesso completo à plataforma Gestão Financeira Pessoal.</div>
+        <div class="page-sub">Acesso completo à plataforma OzTech SmartControl</div>
       </div>
       <div id="plano-atual-info" style="margin-bottom:1.25rem;"></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
@@ -1103,10 +1103,11 @@
         <div class="card" style="border:1px solid rgba(74,158,255,0.3);position:relative;">
           <div style="font-size:13px;font-weight:600;color:var(--blue);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;">Plano Mensal</div>
           <div style="font-size:36px;font-weight:700;color:var(--text);margin-bottom:4px;">R$ 19<span style="font-size:18px;">,99</span></div>
-          <div style="font-size:13px;color:var(--text2);margin-bottom:1.25rem;">Acesso por 30 dias, com renovação automática.</div>
+          <div style="font-size:13px;color:var(--text2);margin-bottom:1.25rem;">por mês — renovação automática</div>
           <div style="font-size:13px;color:var(--text2);margin-bottom:6px;">✅ Acesso completo</div>
           <div style="font-size:13px;color:var(--text2);margin-bottom:6px;">✅ Dados na nuvem</div>
-          <div style="font-size:13px;color:var(--text2);margin-bottom:6px;">✅ Multiplataforma (PC e Mobile)</div>
+          <div style="font-size:13px;color:var(--text2);margin-bottom:6px;">✅ Multi-dispositivo</div>
+          <div style="font-size:13px;color:var(--text2);margin-bottom:1.5rem;">✅ Suporte prioritário</div>
           <button class="btn-submit blue" style="width:100%;" onclick="assinarPlano('mensal')">Assinar agora</button>
         </div>
         <!-- Vitalício -->
@@ -1114,14 +1115,15 @@
           <div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--green);color:#000;font-size:11px;font-weight:700;padding:3px 14px;border-radius:20px;letter-spacing:0.06em;">MELHOR OFERTA</div>
           <div style="font-size:13px;font-weight:600;color:var(--green);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;">Plano Vitalício</div>
           <div style="font-size:36px;font-weight:700;color:var(--text);margin-bottom:4px;">R$ 299<span style="font-size:18px;">,90</span></div>
-          <div style="font-size:13px;color:var(--text2);margin-bottom:1.25rem;">Pagamento único. Acesso ilimitado à plataforma.</div>
+          <div style="font-size:13px;color:var(--text2);margin-bottom:1.25rem;">pagamento único — acesso para sempre</div>
           <div style="font-size:13px;color:var(--text2);margin-bottom:6px;">✅ Tudo do plano mensal</div>
           <div style="font-size:13px;color:var(--text2);margin-bottom:6px;">✅ Sem mensalidade</div>
+          <div style="font-size:13px;color:var(--text2);margin-bottom:6px;">✅ Todas as futuras atualizações</div>
           <div style="font-size:13px;color:var(--text2);margin-bottom:1.5rem;">✅ Acesso vitalício garantido</div>
           <button class="btn-submit green" style="width:100%;" onclick="assinarPlano('vitalicio')">Adquirir agora</button>
         </div>
       </div>
-      <div style="text-align:center;font-size:12px;color:var(--text3);margin-top:8px;">Pagamento seguro via Mercado Pago<br>Pix, cartão e boleto</div>
+      <div style="text-align:center;font-size:12px;color:var(--text3);margin-top:8px;">Pagamento 100% seguro via Mercado Pago • Pix, cartão de crédito e boleto</div>
     </div>
 
     <!-- ADMIN -->
@@ -1367,6 +1369,19 @@ async function resgatarAcesso() {
     if(acesso[0].expira_em&&new Date(acesso[0].expira_em)<new Date()){showMsg('resgatar-msg','error','O acesso doado expirou.');setLoading(false);return;}
     const reg=await sbAuth('signup',{email,password:senha,options:{data:{nome}}});
     if(reg.error){showMsg('resgatar-msg','error',reg.error.message||'Erro ao criar conta.');setLoading(false);return;}
+    // Criar perfil imediatamente com o nome correto via service key
+    if(reg.user && reg.user.id) {
+      await fetch(`${SUPA_URL}/rest/v1/perfis`, {
+        method: 'POST',
+        headers: {
+          'apikey': 'sb_secret_fdNAGdaPDmGTIC1mWA0IBw_TgUA8dzh',
+          'Authorization': 'Bearer sb_secret_fdNAGdaPDmGTIC1mWA0IBw_TgUA8dzh',
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal,resolution=ignore-duplicates'
+        },
+        body: JSON.stringify({ id: reg.user.id, nome: nome, email: email, ativo: true, acesso_doado: true })
+      }).catch(e => console.log('Perfil será criado no login:', e));
+    }
     showMsg('resgatar-msg','success','✅ Conta criada! Faça login com seu e-mail e senha.');
     setTimeout(()=>{document.getElementById('inp-user').value=email;goLogin();},2500);
   } catch(e){showMsg('resgatar-msg','error','Erro: '+e.message);}
